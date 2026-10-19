@@ -163,3 +163,11 @@ def test_save_design_keeps_extra_pages_and_can_drop_them(tmp_path):
     assert len(core.load_design(d, "d1")["more"]) == 2
     core.save_design(d, {"id": "d1", "canvas": {"objects": []}, "more": []})
     assert core.load_design(d, "d1")["more"] == []
+
+
+def test_save_design_keeps_branches_and_use(tmp_path):
+    d = designs_dir(tmp_path)
+    br = [{"id": "main", "name": "ต้นฉบับ", "pages": None}, {"id": "b1", "name": "สดใส", "pages": [{"objects": []}], "note": "สีสด"}]
+    core.save_design(d, {"id": "d1", "branches": br, "activeBranch": "b1", "use": "ส่วนตัว"})
+    doc = core.load_design(d, "d1")
+    assert doc["branches"][1]["note"] == "สีสด" and doc["activeBranch"] == "b1" and doc["use"] == "ส่วนตัว"
