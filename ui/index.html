@@ -417,6 +417,11 @@ input[type=range]{accent-color:var(--acc);width:150px}
           <button class="btn out" onclick="align('r')"><svg><use href="#i-al-r"/></svg>ขวา</button>
           <button class="btn out" onclick="align('b')"><svg><use href="#i-al-b"/></svg>ล่าง</button>
         </div>
+        <h4>จัดระเบียบ (เลือก 3 ชิ้นขึ้นไป)</h4>
+        <div class="ord">
+          <button class="btn out" onclick="distribute('h')"><svg><use href="#i-al-c"/></svg>เว้นระยะเท่ากัน ↔</button>
+          <button class="btn out" onclick="distribute('v')"><svg><use href="#i-al-m"/></svg>เว้นระยะเท่ากัน ↕</button>
+        </div>
         <h4>ขั้นสูง</h4>
         <div class="adv">
           <label>ความกว้าง<input class="f" id="pW" type="number" min="1"></label>
@@ -1178,6 +1183,12 @@ function align(d){const objs=cv.getActiveObjects();if(!objs.length)return;const 
  objs.forEach((o,i)=>{const r=rs[i];
   o.set({left:o.left+({l:L-r.left,c:(L+R-r.width)/2-r.left,r:R-r.width-r.left}[d]||0),top:o.top+({t:T-r.top,m:(T+B-r.height)/2-r.top,b:B-r.height-r.top}[d]||0)}).setCoords();});
  cv.setActiveObject(multi?new fabric.ActiveSelection(objs,{canvas:cv}):objs[0]);cv.requestRenderAll();save();onSel();}
+function distribute(ax){const objs=cv.getActiveObjects();if(objs.length<3)return toast('เลือกอย่างน้อย 3 ชิ้นเพื่อเว้นระยะเท่ากัน');
+ const [p,s]=ax==='h'?['left','width']:['top','height'];cv.discardActiveObject();
+ const it=objs.map(o=>({o,r:o.getBoundingRect(true,true)})).sort((a,b)=>a.r[p]-b.r[p]),first=it[0].r,last=it.at(-1).r;
+ const gap=(last[p]+last[s]-first[p]-it.reduce((n,x)=>n+x.r[s],0))/(it.length-1);let at=first[p];
+ it.forEach(({o,r})=>{o.set(p,o[p]+at-r[p]).setCoords();at+=r[s]+gap;});
+ cv.setActiveObject(new fabric.ActiveSelection(objs,{canvas:cv}));cv.requestRenderAll();save();toast(`เว้นระยะเท่ากัน ${Math.round(gap)} px`);}
 function groupSel(){const o=act();if(o?.type!=='activeSelection')return;o.toGroup();cv.requestRenderAll();save();onSel();}
 function ungroupSel(){const o=act();if(o?.type!=='group')return;o.toActiveSelection();cv.requestRenderAll();save();onSel();}
 function selectAll(){cv.discardActiveObject();const all=cv.getObjects().filter(o=>o.visible);
@@ -1193,12 +1204,32 @@ cv.on('object:moving',e=>{const o=e.target,t=8/zoom;o.setCoords();const r=o.getB
  const others=cv.getObjects().filter(x=>x!==o&&x.visible&&!(o.getObjects?.().includes(x))).map(x=>x.getBoundingRect(true,true));
  const tx=[0,docW/2,docW,...others.flatMap(b=>[b.left,b.left+b.width/2,b.left+b.width])],ty=[0,docH/2,docH,...others.flatMap(b=>[b.top,b.top+b.height/2,b.top+b.height])];
  const snap=(pts,targets,key)=>{for(const p of pts)for(const q of targets)if(Math.abs(p-q)<t){o.set(key,o[key]+q-p);guides.push(key==='left'?{x:q}:{y:q});return;}};
- snap([r.left,r.left+r.width/2,r.left+r.width],tx,'left');snap([r.top,r.top+r.height/2,r.top+r.height],ty,'top');o.setCoords();});
-cv.on('after:render',e=>{if(!guides.length||e.ctx!==cv.contextContainer)return;const c=e.ctx,v=cv.viewportTransform;  // only the live canvas, never exports
+ snap([r.left,r.left+r.width/2,r.left+r.width],tx,'left');snap([r.top,r.top+r.height/2,r.top+r.height],ty,'top');o.setCoords();
+ measure(o,others,t);});
+/* spacing guides: distance to the nearest neighbour (or page edge) on each side; equal gaps snap and show "=" */
+let measures=[];
+function measure(o,others,t){measures=[];
+ for(const [pos,size,lo,hi,key,max] of [['left','width','top','height','left',docW],['top','height','left','width','top',docH]]){
+  let r=o.getBoundingRect(true,true);const ov=b=>b[lo]<r[lo]+r[hi]&&b[lo]+b[hi]>r[lo];  // neighbours that overlap on the other axis
+  const before=others.filter(b=>ov(b)&&b[pos]+b[size]<=r[pos]+.5).map(b=>b[pos]+b[size]),after=others.filter(b=>ov(b)&&b[pos]>=r[pos]+r[size]-.5).map(b=>b[pos]);
+  const A=before.length?Math.max(...before):0,B=after.length?Math.min(...after):max;
+  let g1=r[pos]-A,g2=B-r[pos]-r[size];const eq=(before.length&&after.length)&&Math.abs(g1-g2)<t;
+  if(eq){o.set(key,o[key]+(g2-g1)/2);o.setCoords();r=o.getBoundingRect(true,true);g1=g2=r[pos]-A;}
+  const mid=r[lo]+r[hi]/2;
+  measures.push({pos,a:A,b:r[pos],m:mid,g:g1,eq},{pos,a:r[pos]+r[size],b:B,m:mid,g:g2,eq});}}
+function drawMeasures(c,v){c.save();c.font='600 11px Kanit, sans-serif';c.textAlign='center';c.textBaseline='middle';
+ for(const q of measures){if(q.g<1)continue;const h=q.pos==='left',P=x=>x*v[0]+v[4],Q=y=>y*v[3]+v[5];
+  const [x1,y1,x2,y2]=h?[P(q.a),Q(q.m),P(q.b),Q(q.m)]:[P(q.m),Q(q.a),P(q.m),Q(q.b)];
+  c.strokeStyle=c.fillStyle=q.eq?'#7a1f38':ACC;c.lineWidth=1;c.setLineDash([]);c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);
+  if(h){c.moveTo(x1,y1-4);c.lineTo(x1,y1+4);c.moveTo(x2,y2-4);c.lineTo(x2,y2+4);}else{c.moveTo(x1-4,y1);c.lineTo(x1+4,y1);c.moveTo(x2-4,y2);c.lineTo(x2+4,y2);}c.stroke();
+  const txt=(q.eq?'= ':'')+Math.round(q.g),w=c.measureText(txt).width+10,mx=(x1+x2)/2,my=(y1+y2)/2;
+  c.beginPath();c.roundRect?c.roundRect(mx-w/2,my-9,w,18,9):c.rect(mx-w/2,my-9,w,18);c.fill();c.fillStyle='#fff';c.fillText(txt,mx,my+.5);}
+ c.restore();}
+cv.on('after:render',e=>{if((!guides.length&&!measures.length)||e.ctx!==cv.contextContainer)return;const c=e.ctx,v=cv.viewportTransform;  // only the live canvas, never exports
  c.save();c.strokeStyle=ACC;c.lineWidth=1;c.setLineDash([4,4]);c.beginPath();
  guides.forEach(g=>{if(g.x!=null){const X=g.x*v[0]+v[4];c.moveTo(X,0);c.lineTo(X,cv.height);}else{const Y=g.y*v[3]+v[5];c.moveTo(0,Y);c.lineTo(cv.width,Y);}});
- c.stroke();c.restore();});
-cv.on('mouse:up',()=>{if(guides.length){guides=[];cv.requestRenderAll();}});
+ c.stroke();c.restore();drawMeasures(c,v);});
+cv.on('mouse:up',()=>{if(guides.length||measures.length){guides=[];measures=[];cv.requestRenderAll();}});
 
 /* ===== effects panel: image filters, outline/stroke, corner radius, shadow ===== */
 fabric.Image.filters.Duotone=fabric.util.createClass(fabric.Image.filters.BaseFilter,{type:'Duotone',dark:'#2d2a8c',light:'#be3455',
