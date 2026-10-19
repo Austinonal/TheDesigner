@@ -1,7 +1,9 @@
 """PinCut core: file and image logic with no GUI, so it can be tested on its own."""
 import base64
+import json
 import os
 import re
+import time
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -17,6 +19,7 @@ def library_dir() -> Path:
     d = Path(os.environ.get("PINCUT_DIR") or Path.home() / "Downloads" / "PinCut")
     (d / "fonts").mkdir(parents=True, exist_ok=True)
     (d / "trash").mkdir(exist_ok=True)
+    (d / "designs" / "trash").mkdir(parents=True, exist_ok=True)
     return d
 
 
@@ -25,6 +28,12 @@ def safe_name(name: str) -> str:
     name = Path(str(name).replace("\\", "/")).name
     name = re.sub(r"[^\w\-. ]", "_", name).strip(" .")
     return name[:80] or "file"
+
+
+def export_name(name: str, ext: str) -> str:
+    """File name for the Save dialog. Unlike safe_name it keeps Thai vowels and tone marks."""
+    name = re.sub(r'[\x00-\x1f/\\:*?"<>|]', "_", str(name)).strip(" .")
+    return f"{name[:80] or 'design'}.{ext}"
 
 
 def unique_path(folder: Path, name: str) -> Path:
@@ -129,6 +138,92 @@ def trash_file(folder: Path, file_id: str) -> Path:
     target = unique_path(folder / "trash", p.name)
     p.replace(target)
     return target
+
+
+# ---------- designs (Downloads/PinCut/designs/<id>.json) ----------
+
+_DESIGN_ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+_DESIGN_FIELDS = ("id", "name", "kind", "size", "w", "h", "thumb", "canvas")  # what the UI may write
+
+
+def _design_path(folder: Path, design_id: str) -> Path:
+    if not _DESIGN_ID.match(str(design_id)):
+        raise ValueError("รหัสดีไซน์ไม่ถูกต้อง")
+    return folder / f"{design_id}.json"
+
+
+def _read_design(p: Path) -> dict:
+    if not p.is_file():
+        raise FileNotFoundError(f"ไม่พบดีไซน์: {p.stem}")
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def _write_design(p: Path, doc: dict):
+    raw = json.dumps(doc, ensure_ascii=False)
+    if len(raw.encode("utf-8")) > MAX_BYTES:
+        raise ValueError("ดีไซน์ใหญ่เกิน 50 MB")
+    tmp = p.with_suffix(".tmp")
+    tmp.write_text(raw, encoding="utf-8")
+    tmp.replace(p)  # atomic: a crash mid-save never leaves half a file
+
+
+def design_meta(doc: dict) -> dict:
+    """Everything the home screen needs, without the (big) canvas JSON."""
+    m = {k: doc.get(k) for k in ("id", "name", "kind", "size", "w", "h", "thumb", "starred", "created", "updated")}
+    m["objects"] = len((doc.get("canvas") or {}).get("objects") or [])
+    return m
+
+
+def save_design(folder: Path, doc: dict, now: float = None) -> dict:
+    """Create or overwrite a design. Keeps its created time and star; stamps updated."""
+    p = _design_path(folder, doc.get("id"))
+    old = _read_design(p) if p.exists() else {}
+    t = time.time() if now is None else now
+    new = {**old, **{k: doc[k] for k in _DESIGN_FIELDS if k in doc}}
+    new["name"] = str(new.get("name") or "ดีไซน์ที่ไม่มีชื่อ")[:120]
+    new.update(created=old.get("created", t), updated=t, starred=bool(old.get("starred")))
+    _write_design(p, new)
+    return design_meta(new)
+
+
+def list_designs(folder: Path) -> list:
+    """Metadata of every design, last edited first. Unreadable files are skipped."""
+    out = []
+    for p in folder.glob("*.json"):
+        try:
+            out.append(design_meta(_read_design(p)))
+        except (OSError, ValueError):
+            continue
+    return sorted(out, key=lambda m: m.get("updated") or 0, reverse=True)
+
+
+def load_design(folder: Path, design_id: str) -> dict:
+    return _read_design(_design_path(folder, design_id))
+
+
+def update_design(folder: Path, design_id: str, name: str = None, starred: bool = None) -> dict:
+    """Rename or star a design. Does not count as an edit, so `updated` stays."""
+    p = _design_path(folder, design_id)
+    doc = _read_design(p)
+    if name is not None and str(name).strip():
+        doc["name"] = str(name).strip()[:120]
+    if starred is not None:
+        doc["starred"] = bool(starred)
+    _write_design(p, doc)
+    return design_meta(doc)
+
+
+def trash_design(folder: Path, design_id: str):
+    p = _design_path(folder, design_id)
+    _read_design(p)
+    p.replace(folder / "trash" / p.name)
+
+
+def restore_design(folder: Path, design_id: str) -> dict:
+    t = _design_path(folder / "trash", design_id)
+    doc = _read_design(t)
+    t.replace(folder / t.name)
+    return design_meta(doc)
 
 
 def cut_background(path: Path) -> Path:
