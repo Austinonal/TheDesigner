@@ -16,6 +16,7 @@ def library_dir() -> Path:
     """Where downloaded and uploaded images live. Override with the PINCUT_DIR environment variable."""
     d = Path(os.environ.get("PINCUT_DIR") or Path.home() / "Downloads" / "PinCut")
     (d / "fonts").mkdir(parents=True, exist_ok=True)
+    (d / "trash").mkdir(exist_ok=True)
     return d
 
 
@@ -99,8 +100,9 @@ def candidate_urls(url: str) -> list:
     return out
 
 
-def download_pin(url: str, folder: Path, get) -> Path:
+def download_pin(url: str, folder: Path, get) -> tuple:
     """Download the biggest available version of a Pinterest image into `folder`.
+    Returns (path, is_new). A pin saved before is not downloaded again: is_new is False.
     `get` is requests.get (passed in so tests can fake it)."""
     last = "ไม่มี URL ให้ลอง"
     for u in candidate_urls(url):
@@ -108,17 +110,25 @@ def download_pin(url: str, folder: Path, get) -> Path:
         if Path(name).suffix.lower() not in IMG_EXT:
             name += ".jpg"
         target = folder / name
-        if target.exists():  # already downloaded: don't make a copy
-            return target
+        if target.exists():  # already saved: don't make a copy
+            return target, False
         r = get(u, timeout=30, headers={"User-Agent": "Mozilla/5.0", "Referer": "https://www.pinterest.com/"})
         ctype = r.headers.get("Content-Type", "")
         if r.status_code == 200 and ctype.startswith("image/"):
             if len(r.content) > MAX_BYTES:
                 raise ValueError("รูปใหญ่เกิน 50 MB")
             target.write_bytes(r.content)
-            return target
+            return target, True
         last = f"{u} -> {r.status_code} {ctype}"
     raise RuntimeError(f"โหลดรูปไม่สำเร็จ ({last})")
+
+
+def trash_file(folder: Path, file_id: str) -> Path:
+    """Move a library file into folder/trash (recoverable) instead of deleting it."""
+    p = existing_file(folder, file_id)
+    target = unique_path(folder / "trash", p.name)
+    p.replace(target)
+    return target
 
 
 def cut_background(path: Path) -> Path:

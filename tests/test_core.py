@@ -66,6 +66,14 @@ def test_existing_file_blocks_path_traversal(tmp_path):
     assert core.existing_file(lib, "in.png").name == "in.png"
 
 
+def test_trash_moves_file_out_of_library(tmp_path):
+    (tmp_path / "trash").mkdir()
+    (tmp_path / "a.png").write_bytes(PNG)
+    t = core.trash_file(tmp_path, "a.png")
+    assert t == tmp_path / "trash" / "a.png" and t.read_bytes() == PNG
+    assert core.list_files(tmp_path, core.IMG_EXT) == []
+
+
 class FakeResp:
     def __init__(self, status, ctype="image/jpeg", content=PNG):
         self.status_code, self.headers, self.content = status, {"Content-Type": ctype}, content
@@ -78,11 +86,13 @@ def test_download_pin_falls_back_when_original_missing(tmp_path):
         tried.append(url)
         return FakeResp(403, "text/html") if "/originals/" in url else FakeResp(200)
 
-    p = core.download_pin("https://i.pinimg.com/236x/ab/cd/ef/abcdef.jpg", tmp_path, get)
-    assert p.name == "pin_abcdef.jpg" and p.read_bytes() == PNG
+    p, new = core.download_pin("https://i.pinimg.com/236x/ab/cd/ef/abcdef.jpg", tmp_path, get)
+    assert new and p.name == "pin_abcdef.jpg" and p.read_bytes() == PNG
     assert tried[0].startswith("https://i.pinimg.com/originals/")
-    # second download of the same pin reuses the file instead of copying
-    assert core.download_pin("https://i.pinimg.com/236x/ab/cd/ef/abcdef.jpg", tmp_path, get) == p
+    # saving the same pin again (even from another size) reuses the file, no download, no copy
+    n = len(tried)
+    assert core.download_pin("https://i.pinimg.com/736x/ab/cd/ef/abcdef.jpg", tmp_path, get) == (p, False)
+    assert len(tried) == n and len(list(tmp_path.iterdir())) == 1
 
 
 def test_download_pin_raises_when_nothing_works(tmp_path):

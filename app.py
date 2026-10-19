@@ -43,7 +43,7 @@ PIN_JS = r"""
     if (!window.pywebview) return say('รอสักครู่แล้วลองใหม่');
     say('กำลังโหลด…');
     const r = await window.pywebview.api.grab(big(imgs[0].i));
-    say(r.ok ? '✓ เก็บแล้ว อยู่ในแท็บอัพโหลด' : '✕ ' + r.error);
+    say(!r.ok ? '✕ ' + r.error : r.dup ? '✓ รูปนี้เก็บไว้แล้ว ไม่เก็บซ้ำ' : '✓ เก็บแล้ว อยู่ในแท็บอัพโหลด');
   };
   document.body.appendChild(b);
 })();
@@ -69,11 +69,12 @@ class PinApi:
 
     def grab(self, url):
         try:
-            path = core.download_pin(url, LIB, requests.get)
+            path, new = core.download_pin(url, LIB, requests.get)
         except Exception as e:
             return {"ok": False, "error": str(e)}
-        main.evaluate_js(f"window.onLibraryAdded({json.dumps(core.item(path))})")
-        return {"ok": True}
+        if new:
+            main.evaluate_js(f"window.onLibraryAdded({json.dumps(core.item(path))})")
+        return {"ok": True, "dup": not new}
 
 
 class Api:
@@ -130,6 +131,20 @@ class Api:
     def save_upload(self, name, data):
         return core.item(core.save_data_url(LIB, name, data, core.IMG_EXT))
 
+    def file_info(self, file_id):
+        st = core.existing_file(LIB, file_id).stat()
+        return {"size": st.st_size, "mtime": st.st_mtime}
+
+    def save_copy(self, file_id):
+        p = core.existing_file(LIB, file_id)
+        path = save_dialog(p.name)
+        if path:
+            Path(path).write_bytes(p.read_bytes())
+        return path
+
+    def trash(self, file_id):
+        core.trash_file(LIB, file_id)
+
     def cut_background(self, file_id):
         return core.item(core.cut_background(core.existing_file(LIB, file_id)))
 
@@ -143,13 +158,19 @@ class Api:
     # ----- export -----
     def save_export(self, data, ext):
         ext = {"png": "png", "jpg": "jpg", "pdf": "pdf"}[ext]
-        kind = webview.FileDialog.SAVE if hasattr(webview, "FileDialog") else webview.SAVE_DIALOG
-        path = main.create_file_dialog(kind, save_filename=f"design.{ext}")
-        if not path:
-            return None
-        path = path if isinstance(path, str) else path[0]
-        Path(path).write_bytes(core.from_data_url(data))
+        path = save_dialog(f"design.{ext}")
+        if path:
+            Path(path).write_bytes(core.from_data_url(data))
         return path
+
+
+def save_dialog(name):
+    """Native "Save as" dialog; returns the chosen path or None."""
+    kind = webview.FileDialog.SAVE if hasattr(webview, "FileDialog") else webview.SAVE_DIALOG
+    path = main.create_file_dialog(kind, save_filename=name)
+    if not path:
+        return None
+    return path if isinstance(path, str) else path[0]
 
 
 if __name__ == "__main__":

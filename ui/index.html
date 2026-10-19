@@ -89,6 +89,13 @@ input.f,select.f{font:inherit;padding:10px 12px;font-size:15px;border:1px solid 
 .tbar select,.tbar input{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:6px 8px}
 .tbar input[type=number]{width:64px}.tbar input[type=color]{width:34px;height:32px;padding:2px}
 .tbar .tg.on{background:var(--accSoft);color:var(--acc)}
+.it .more{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:8px;background:#fffffff2;display:grid;place-items:center;opacity:0;box-shadow:0 1px 4px #0003}
+.it:hover .more,.it .more:focus-visible,.it .more[aria-expanded=true]{opacity:1}.it .more svg{width:18px;height:18px}
+.fmenu{position:fixed;z-index:40;width:270px;background:#fff;border-radius:14px;padding:6px;box-shadow:0 8px 30px #00000033;display:flex;flex-direction:column}
+.fmenu .fh{padding:10px 12px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}.fmenu .fh b{display:block;font-weight:500;font-size:15px;word-break:break-all}
+.fmenu .fh small{color:var(--mut);font-size:12px}.fmenu button{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:8px;font-size:14px;text-align:left}
+.fmenu button:hover{background:var(--bg)}.fmenu button svg{width:20px;height:20px}.fmenu .danger{color:#c62828}
+.fmenu .fdet{padding:2px 12px 10px 44px;font-size:13px;color:var(--mut);line-height:1.6}.fmenu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
 .steps{margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:var(--mut)}.steps b{color:var(--txt);font-weight:500}
 .toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:#1d2127;color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}.toast.on{opacity:1}
 .ctxbar label{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:500;padding:0 8px}.ctxbar label input{width:90px}
@@ -136,6 +143,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
 </head>
 <body>
 <svg style="display:none">
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></symbol>
   <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></symbol>
   <symbol id="i-font" viewBox="0 0 24 24"><path d="M4 20l6-16 6 16M6.5 14h7M16 20h4M18 4v16"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
@@ -324,6 +332,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
 </section>
 
 <div class="toast" id="toast" role="status"></div>
+<div class="fmenu" id="fmenu" role="menu" hidden></div>
 <div class="modal" id="loginModal" onclick="if(event.target===this)closeLogin()">
   <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="mTitle">
     <button class="x" onclick="closeLogin()" aria-label="ปิด">✕</button>
@@ -413,17 +422,56 @@ document.querySelectorAll('#editor .rail button').forEach(b=>b.onclick=()=>openP
 function thumb(src,box,onClick,getBtn){const d=document.createElement('div');d.className='it';
  d.innerHTML=`<img src="${src}">`+(getBtn?'<button class="get">⬇ โหลด</button>':'');
  if(getBtn)d.querySelector('.get').onclick=e=>{e.stopPropagation();const g=e.currentTarget;if(g.disabled)return;g.disabled=true;g.textContent='✓ อยู่ในอัพโหลด';getBtn(src);};
- d.onclick=()=>onClick&&onClick(src);const b=$(box);b.querySelector('.empty')?.remove();b.prepend(d);}
+ d.onclick=()=>onClick&&onClick(src);const b=$(box);b.querySelector('.empty')?.remove();b.prepend(d);return d;}
 
 /* ===== backend (app.py, via pywebview) ===== */
-const api=()=>window.pywebview.api;
-const ready=new Promise(r=>window.pywebview?r():window.addEventListener('pywebviewready',r));
+// Opened in a normal browser (web demo / GitHub Pages) there is no Python: fall back to WEB below.
+const APP_ONLY='ฟีเจอร์นี้ใช้ได้ในแอปเดสก์ท็อป (รัน python app.py) — เว็บเดโมทำได้แค่แต่งรูปที่อัพโหลดเอง';
+const WEB={n:0,meta:{},login_status:async()=>false,list_library:async()=>[],list_fonts:async()=>[],
+ save_upload:async(name,src)=>{const id='web'+(++WEB.n);WEB.meta[id]={name,src,size:Math.round(src.length*.75),mtime:Date.now()/1000};return {id,src,name};},
+ file_info:async id=>WEB.meta[id],trash:async id=>{delete WEB.meta[id];},
+ save_copy:async id=>{const m=WEB.meta[id],a=document.createElement('a');a.href=m.src;a.download=m.name;a.click();return m.name;},save_font:async name=>name.replace(/\.[^.]+$/,''),
+ cut_background:async()=>{throw new Error(APP_ONLY);},
+ save_export:async(data,ext)=>{const a=document.createElement('a');a.href=data;a.download='design.'+ext;a.click();return 'design.'+ext;}};
+const api=()=>window.pywebview?window.pywebview.api:WEB;
+const ready=new Promise(r=>{if(window.pywebview)return r();window.addEventListener('pywebviewready',r);setTimeout(r,1500);});
+const inApp=()=>!!window.pywebview;
 let toastT;function toast(t,ms=2500){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),ms);}
-const libThumb=it=>thumb(it.src,'uploads',()=>addImage(it.src,it.id));
+function libThumb(it){const d=thumb(it.src,'uploads',()=>addImage(it.src,it.id));
+ const m=document.createElement('button');m.className='more';m.title='ตัวเลือก';m.setAttribute('aria-haspopup','menu');m.innerHTML='<svg><use href="#i-more"/></svg>';
+ m.onclick=e=>{e.stopPropagation();fileMenu(it,d,m);};d.append(m);}
+
+/* ⋯ menu on a library image: details / download / move to trash */
+let fmOpen=null;
+function closeFileMenu(){$('fmenu').hidden=true;fmOpen?.setAttribute('aria-expanded','false');fmOpen=null;}
+async function fileMenu(it,card,btn){if(fmOpen===btn){closeFileMenu();return;}closeFileMenu();
+ const m=$('fmenu'),info=await api().file_info(it.id).catch(()=>null),img=new Image();img.src=it.src;await img.decode().catch(()=>{});
+ const size=!info?'':info.size>1048576?(info.size/1048576).toFixed(1)+' MB':Math.max(1,Math.round(info.size/1024))+' KB';
+ const when=info?new Date(info.mtime*1000).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'}):'';
+ m.innerHTML=`<div class="fh"><b></b><small>${when?'เพิ่มเมื่อ '+when:''}</small></div>
+  <button data-a="info" role="menuitem"><svg><use href="#i-info"/></svg>รายละเอียด</button>
+  <div class="fdet" hidden>ขนาดรูป ${img.naturalWidth} × ${img.naturalHeight} px<br>ขนาดไฟล์ ${size}<br>${it.id.startsWith('pin_')?'มาจาก Pinterest':'อัพโหลดจากเครื่อง'}</div>
+  <button data-a="dl" role="menuitem"><svg><use href="#i-down"/></svg>ดาวน์โหลด</button><hr>
+  <button data-a="del" role="menuitem" class="danger"><svg><use href="#i-trash"/></svg><span>ย้ายไปที่ถังขยะ</span></button>`;
+ m.querySelector('b').textContent=it.name||it.id;
+ m.querySelector('[data-a=info]').onclick=()=>{const f=m.querySelector('.fdet');f.hidden=!f.hidden;};
+ m.querySelector('[data-a=dl]').onclick=async()=>{closeFileMenu();try{const p=await api().save_copy(it.id);if(p)toast('บันทึกแล้ว: '+p,4000);}catch(e){toast('บันทึกไม่สำเร็จ: '+(e.message||e),5000);}};
+ const del=m.querySelector('[data-a=del]');del.onclick=async()=>{
+  if(!del.dataset.sure){del.dataset.sure=1;del.querySelector('span').textContent='กดอีกครั้งเพื่อยืนยัน';return;}
+  closeFileMenu();try{await api().trash(it.id);card.remove();toast(inApp()?'ย้ายไปที่ถังขยะแล้ว (Downloads/PinCut/trash)':'ลบออกแล้ว');}
+  catch(e){toast('ลบไม่สำเร็จ: '+(e.message||e),5000);}};
+ m.hidden=false;fmOpen=btn;btn.setAttribute('aria-expanded','true');
+ const r=btn.getBoundingClientRect();
+ m.style.left=Math.max(8,Math.min(r.left,innerWidth-m.offsetWidth-8))+'px';
+ m.style.top=Math.max(8,Math.min(r.bottom+6,innerHeight-m.offsetHeight-8))+'px';
+ m.querySelector('button').focus();}
+document.addEventListener('click',e=>{if(fmOpen&&!$('fmenu').contains(e.target))closeFileMenu();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFileMenu();});
+$('uploads').addEventListener('scroll',closeFileMenu);document.querySelector('#panel-up').addEventListener('scroll',closeFileMenu);
 window.onLibraryAdded=it=>{libThumb(it);toast('เก็บรูปเข้าแท็บอัพโหลดแล้ว');};  // called by app.py after "เก็บรูปนี้"
 
 /* Pinterest search: opens the real Pinterest window (logged in) */
-async function runSearch(q){if(!pinUser){showLogin();return;}await ready;api().open_search(q);toast('เปิดผลค้นหาในหน้าต่าง Pinterest แล้ว');}
+async function runSearch(q){if(!inApp()){toast(APP_ONLY,5000);return;}if(!pinUser){showLogin();return;}await ready;api().open_search(q);toast('เปิดผลค้นหาในหน้าต่าง Pinterest แล้ว');}
 $('q').onkeydown=e=>{if(e.key==='Enter'&&q.value.trim())runSearch(q.value.trim());};
 $('homeQ').onkeydown=e=>{if(e.key==='Enter'&&homeQ.value.trim()){q.value=homeQ.value;newDoc(1080,1080,'โพสต์สี่เหลี่ยม');openPanel('pin');runSearch(homeQ.value.trim());}};
 
@@ -445,7 +493,7 @@ function showLogin(){const L=$('mLogo');clearInterval(waitLogin);
   $('mText').textContent='Login ด้วยบัญชีของคุณเพื่อค้นหาและโหลดรูปจาก Pinterest มาใช้ในงานออกแบบ';
   $('mBtns').innerHTML='<button class="btn red" id="mGo">เปิดหน้า Login ของ Pinterest</button>';
   $('mNote').textContent='รหัสผ่านพิมพ์ในหน้าต่างของ Pinterest เอง PinCut ไม่เห็นและไม่เก็บรหัสผ่าน';
-  $('mGo').onclick=async()=>{const b=$('mGo');b.disabled=true;b.innerHTML='<span class="spin"></span>Login ในหน้าต่าง Pinterest ที่เปิดขึ้น…';
+  $('mGo').onclick=async()=>{if(!inApp()){toast(APP_ONLY,5000);return;}const b=$('mGo');b.disabled=true;b.innerHTML='<span class="spin"></span>Login ในหน้าต่าง Pinterest ที่เปิดขึ้น…';
    await ready;await api().open_login();
    waitLogin=setInterval(async()=>{if(await api().login_status()){clearInterval(waitLogin);setUser('Pinterest');showLogin();}},2000);};}
  $('loginModal').classList.add('on');}
@@ -461,7 +509,7 @@ $('homeUpload').onchange=e=>{readFiles(e.target.files,async(src,name)=>{const it
  const im=new Image();im.onload=()=>{newDoc(im.width,im.height,'จากรูปที่อัพโหลด');libThumb(it);addImage(it.src,it.id);};im.src=it.src;});e.target.value='';};
 
 /* startup: login state, library images, saved fonts */
-ready.then(async()=>{setUser(await api().login_status()?'Pinterest':null);
+ready.then(async()=>{if(!inApp())toast('โหมดเดโมบนเว็บ: อัพโหลดรูป ใส่ข้อความ และดาวน์โหลดได้ ส่วน Pinterest/ตัดพื้นหลังต้องใช้แอป',6000);setUser(await api().login_status()?'Pinterest':null);
  (await api().list_library()).reverse().forEach(libThumb);
  for(const f of await api().list_fonts()){try{await registerFont(f.name,f.data);myFonts.push(f);}catch{}}renderFonts();});
 
