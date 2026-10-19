@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PinCut</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&family=Prompt:wght@400;700&family=Sarabun:wght@400;700&family=Mitr:wght@400;600&family=Chakra+Petch:wght@400;700&family=Itim&family=Pattaya&family=Charm:wght@400;700&family=Bai+Jamjuree:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--acc:#ef5a4c;--acc2:#ff9f5a;--accSoft:#fdebe8;--bg:#f2f3f5;--line:#e3e5e9;--txt:#0e1318;--mut:#5e6670;--r:12px}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font-family:Kanit,sans-serif;font-weight:400;font-size:15px;-webkit-font-smoothing:antialiased;color:var(--txt);background:#fff;overflow:hidden}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.screen{display:none;height:100vh}.screen.on{display:flex}
+/* ---------- shared side rail ---------- */
+.rail{width:76px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;background:#fff;border-right:1px solid var(--line)}
+.rail button{width:70px;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;line-height:1.25;text-align:center;color:var(--mut)}
+.rail .ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+.rail button:hover .ico{background:var(--bg)}
+.rail button.on{color:var(--txt)}.rail button.on .ico{background:var(--accSoft);color:var(--acc)}
+.rail .create .ico{background:var(--acc);color:#fff;border-radius:50%}
+/* ---------- HOME ---------- */
+#home .main{flex:1;margin:8px;border-radius:20px;overflow:auto;background:linear-gradient(160deg,#ffd9cf 0%,#ffeede 35%,#fff 70%)}
+.hero{padding:64px 40px 24px;text-align:center}
+.hero h1{margin:0 0 28px;font-size:clamp(28px,4vw,40px);letter-spacing:-.01em;font-weight:500;background:linear-gradient(90deg,var(--acc),#c2410c);-webkit-background-clip:text;color:transparent}
+.searchbar{max-width:760px;margin:auto;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 20px;box-shadow:0 4px 20px #0000000d;color:var(--mut)}
+.searchbar input{border:0;outline:0;font:inherit;flex:1;font-size:15px}
+.cats{display:flex;justify-content:center;gap:34px;margin:40px 0 10px}
+.cat{display:flex;flex-direction:column;align-items:center;gap:10px;font-size:14px}
+.cat .circ{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;color:#fff;transition:transform .15s}
+.cat:hover .circ{transform:translateY(-3px)}.cat svg{width:26px;height:26px}
+.recent{padding:10px 40px 40px}.recent h2{font-weight:500;font-size:20px;margin:24px 0 16px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+.card .pv{height:170px;background:var(--bg);border-radius:var(--r);display:grid;place-items:center;overflow:hidden}
+.card .pv img{max-height:170px;max-width:85%;box-shadow:0 2px 6px #0002}
+.card b{display:block;font-weight:500;font-size:14px;margin-top:10px}.card small{color:var(--mut);font-size:12px}
+.empty{color:var(--mut);font-size:14px;grid-column:1/-1}
+.acctLbl{max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ---------- SIZE (modal-ish page) ---------- */
+#size{flex-direction:column;padding:28px 40px;overflow:auto}
+.row{display:flex;gap:12px;align-items:end}
+.row label{display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--mut);flex:1;max-width:360px}
+input.f,select.f{font:inherit;padding:10px 12px;font-size:15px;border:1px solid #c7cbd1;border-radius:12px;width:100%;background:#fff}
+.btn{padding:10px 18px;border-radius:10px;font-weight:500;font-size:14px}
+.btn.pri{background:var(--acc);color:#fff}.btn.pri:hover{filter:brightness(.95)}
+.btn.sec{background:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px;margin-top:10px}
+.preset{text-align:left}.preset .pv{height:180px;background:var(--bg);border-radius:16px;display:grid;place-items:center}
+.preset:hover .pv{background:#e9ebee}
+.preset .pv div{background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:6px 6px 0 #d0d4da;border-radius:4px}
+.preset b{display:block;font-weight:500;font-size:14px;margin-top:10px}.preset small{color:var(--mut);font-size:12px}
+/* ---------- EDITOR ---------- */
+#editor{flex-direction:column}
+.top{height:56px;flex:none;display:flex;align-items:center;gap:4px;padding:0 10px;background:linear-gradient(90deg,var(--acc),var(--acc2));color:#fff}
+.top button{padding:7px 12px;border-radius:8px;font-weight:500;font-size:14px;display:flex;align-items:center;gap:6px}
+.top button:hover{background:#ffffff2b}.top .sep{width:1px;height:24px;background:#ffffff66;margin:0 6px}
+.top .title{margin-left:auto;margin-right:12px;opacity:.85;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
+/* login modal */
+.modal{position:fixed;inset:0;background:#0e131866;display:none;place-items:center;z-index:50}.modal.on{display:grid}
+.mcard{width:min(420px,calc(100vw - 32px));background:#fff;border-radius:20px;padding:32px 28px 24px;text-align:center;box-shadow:0 20px 60px #0004;position:relative}
+.mcard .x{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;font-size:18px;color:var(--mut)}.mcard .x:hover{background:var(--bg)}
+.mlogo{width:64px;height:64px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;background:#e60023;color:#fff;font-size:26px;font-weight:500}
+.mlogo svg{width:32px;height:32px}
+.mcard h3{margin:0 0 8px;font-size:20px;font-weight:500}.mcard p{margin:0 0 20px;font-size:14px;line-height:1.6;color:var(--mut)}
+.mcard .btn{width:100%;padding:13px;font-size:15px;margin-top:8px}
+.mcard .btn.red{background:#e60023;color:#fff}.mcard .btn.red:hover{filter:brightness(.93)}
+.mcard .note{font-size:12px;color:var(--mut);margin-top:14px}
+.spin{width:18px;height:18px;border:2px solid #fff6;border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite;display:inline-block;vertical-align:-3px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.acct{width:36px;height:36px;border-radius:50%!important;padding:0!important;justify-content:center;font-weight:500;background:#ffffff40;border:2px solid #fff}
+.acct.in{background:#e60023;color:#fff}
+.rail .acctR .ico{border-radius:50%;border:2px solid var(--line)}.rail .acctR.in .ico{background:#e60023;color:#fff;border-color:#e60023}
+.top .share{background:#fff;color:var(--txt);padding:8px 16px;margin-left:6px}.top .share:hover{background:#fff}
+.body{flex:1;display:flex;min-height:0}
+.panel{width:340px;flex:none;padding:16px;overflow:auto;display:flex;flex-direction:column;gap:14px;border-right:1px solid var(--line)}
+.panel .pill{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:11px 14px;color:var(--mut)}
+.panel .pill input{border:0;outline:0;font:inherit;font-size:14px;flex:1}
+.panel[hidden]{display:none}
+.collapse{position:absolute;left:0;top:50%;transform:translateY(-50%);width:22px;height:64px;background:#fff;border:1px solid var(--line);border-left:0;border-radius:0 12px 12px 0;z-index:6;display:none;box-shadow:2px 0 6px #0000000f}
+.collapse.on{display:block}
+.btn.out{border:1px solid var(--line);background:#fff;display:flex;gap:8px;justify-content:center;align-items:center}
+.btn.out:hover{background:var(--bg)}.btn.pri{display:flex;gap:8px;justify-content:center;align-items:center}
+.tstyle{border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-align:left;color:var(--txt)}.tstyle:hover{background:var(--bg)}
+.fontlist{display:flex;flex-direction:column;gap:2px}
+.fontrow{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:10px;font-size:18px;text-align:left}
+.fontrow:hover{background:var(--bg)}.fontrow small{font:12px Kanit;color:var(--mut)}
+.tbar select,.tbar input{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.tbar input[type=number]{width:64px}.tbar input[type=color]{width:34px;height:32px;padding:2px}
+.tbar .tg.on{background:var(--accSoft);color:var(--acc)}
+.steps{margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:var(--mut)}.steps b{color:var(--txt);font-weight:500}
+.toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:#1d2127;color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}.toast.on{opacity:1}
+.ctxbar label{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:500;padding:0 8px}.ctxbar label input{width:90px}
+.panel h4{margin:6px 0 0;font-weight:500;font-size:14px;display:flex;justify-content:space-between}
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--line)}.tabs span{padding:8px 2px;font-size:15px}
+.tabs .on{border-bottom:3px solid var(--acc);font-weight:400}
+.masonry{columns:2;column-gap:8px}.it{break-inside:avoid;margin-bottom:8px;position:relative;border-radius:10px;overflow:hidden;cursor:pointer;background:var(--bg)}
+.it img{width:100%;display:block}.it:hover img{filter:brightness(.92)}
+.it .get{position:absolute;right:6px;bottom:6px;background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;opacity:0;box-shadow:0 1px 4px #0003}.it:hover .get{opacity:1}
+.hint{font-size:12px;color:var(--mut);margin-top:-8px}
+.stage{flex:1;background:var(--bg);position:relative;overflow:auto}
+.stagein{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px 40px}
+.pagetools{align-self:stretch;display:flex;justify-content:center}
+.pagetools div{display:flex;gap:6px;color:var(--mut)}.pagetools button{padding:6px;border-radius:8px}.pagetools button:hover{background:#e3e5e9}
+.page{box-shadow:0 2px 8px #0000001a}
+.addpage{margin-top:22px;border:1px solid #9aa0a8;border-radius:10px;padding:10px;font-weight:400;display:flex;gap:8px;justify-content:center}
+.addpage:hover{background:#e7e9ec}
+/* contextual top bar (image) */
+.ctxbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:2px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 2px 12px #0000001f;z-index:6;white-space:nowrap}
+.ctxbar button{padding:7px 11px;border-radius:8px;font-weight:500;font-size:13px}.ctxbar button:hover{background:var(--bg)}
+.ctxbar .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+/* floating pill above selection */
+.float{position:absolute;display:none;gap:2px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 2px 12px #00000026;z-index:6}
+.float button{padding:7px;border-radius:8px}.float button:hover{background:var(--bg)}
+.menu{position:absolute;display:none;flex-direction:column;width:260px;background:#fff;border-radius:12px;padding:6px;box-shadow:0 6px 24px #00000033;z-index:7}
+.menu button{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;text-align:left;font-size:14px}
+.menu button:hover{background:var(--bg)}.menu kbd{margin-left:auto;font:12px Kanit;color:var(--mut);background:var(--bg);padding:3px 8px;border-radius:6px}
+.menu button svg,.float svg{width:18px;height:18px}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.bottom{height:40px;flex:none;border-top:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 16px;font-size:13px;color:var(--mut)}
+.bottom .l{display:flex;gap:16px;color:var(--txt)}.bottom .l span{display:flex;gap:6px;align-items:center}
+.bottom .r{margin-left:auto;display:flex;align-items:center;gap:14px}
+input[type=range]{accent-color:var(--acc);width:150px}
+/* share / download sheet */
+.sheet{position:absolute;top:64px;right:10px;width:360px;background:#fff;border-radius:16px;box-shadow:0 10px 40px #0000004d;padding:20px;display:none;flex-direction:column;gap:14px;z-index:9}
+.sheet.on{display:flex}.sheet h3{margin:0;font-weight:500;display:flex;gap:10px;align-items:center}
+.sheet .lbl{font-size:13px;font-weight:500}
+.fmtlist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.fmt{display:flex;gap:12px;align-items:center;padding:10px 14px;font-size:14px;text-align:left}.fmt:hover{background:var(--bg)}
+.fmt.on{background:var(--accSoft)}.fmt small{display:block;color:var(--mut);font-size:12px}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:4px}.seg button{flex:1;padding:7px;font-size:14px;border-radius:8px}.seg .on{background:#fff;box-shadow:0 1px 3px #0002}
+.toggle{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+.sheet .btn.pri{width:100%;padding:12px;font-size:15px}
+</style>
+</head>
+<body>
+<svg style="display:none">
+  <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></symbol>
+  <symbol id="i-font" viewBox="0 0 24 24"><path d="M4 20l6-16 6 16M6.5 14h7M16 20h4M18 4v16"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7h7l2 2h9v10H3z"/></symbol>
+  <symbol id="i-temp" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16M12 12h8"/></symbol>
+  <symbol id="i-shapes" viewBox="0 0 24 24"><circle cx="7" cy="7" r="3"/><path d="M14 4h6v6h-6zM4 20l3-6 3 6zM17 14v6M14 17h6"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4 4 0 010-8 5 5 0 019.6-1.5A4 4 0 1117 18"/><path d="M12 12v7M9 15l3-3 3 3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-resize" viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M4 4l6 6M20 20l-6-6"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M7 18a4 4 0 010-8 5 5 0 019.6-1.5A4 4 0 1117 18H7z"/><path d="M9.5 13.5l2 2 3.5-3.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 00-1-1H5a1 1 0 00-1 1v10a1 1 0 001 1h3M14 11v6M11 14h6"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></symbol>
+  <symbol id="i-addpage" viewBox="0 0 24 24"><path d="M5 4h10l4 4v12H5z"/><path d="M12 10v6M9 13h6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="M20 15l-5-5-11 10"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M9 12h6M9 16h6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M11 8h2a2.5 2.5 0 010 5h-2M11 8l-2 10"/></symbol>
+</svg>
+
+<!-- ============ 1) HOME ============ -->
+<section id="home" class="screen on">
+  <nav class="rail">
+    <button class="create" onclick="go('size')"><span class="ico"><svg><use href="#i-plus"/></svg></span>สร้าง</button>
+    <button class="on"><span class="ico"><svg><use href="#i-home"/></svg></span>หน้าหลัก</button>
+    <button onclick="homeUpload.click()"><span class="ico"><svg><use href="#i-cloud"/></svg></span>อัพโหลด</button>
+    <button class="acctR" onclick="acctClick()"><span class="ico acctIco"><svg><use href="#i-pin"/></svg></span><span class="acctLbl">Login Pinterest</span></button>
+  </nav>
+  <div class="main">
+    <div class="hero">
+      <h1>วันนี้คุณจะดีไซน์อะไร?</h1>
+      <label class="searchbar"><svg><use href="#i-search"/></svg><input id="homeQ" placeholder="ค้นหารูปใน Pinterest แล้วไปที่ผืนงาน"></label>
+      <div class="cats">
+        <button class="cat" onclick="go('size')"><span class="circ" style="background:#ef5a4c"><svg><use href="#i-resize"/></svg></span>กำหนดขนาดเอง</button>
+        <button class="cat" onclick="homeUpload.click()"><span class="circ" style="background:#ff9f5a"><svg><use href="#i-cloud"/></svg></span>อัพโหลด</button>
+      </div>
+    </div>
+    <div class="recent"><h2>ล่าสุด</h2><div class="cards" id="recent"><div class="empty">ยังไม่มีดีไซน์ — ดาวน์โหลดงานแล้วจะขึ้นตรงนี้</div></div></div>
+  </div>
+  <input id="homeUpload" type="file" accept="image/*" hidden>
+</section>
+
+<!-- ============ 2) SIZE ============ -->
+<section id="size" class="screen">
+  <div class="row">
+    <button class="btn sec" onclick="go('home')">←</button>
+    <label>ความกว้าง<input class="f" id="w" type="number" value="1080"></label>
+    <label>ความยาว<input class="f" id="h" type="number" value="1080"></label>
+    <label>หน่วย<select class="f" id="unit"><option value="px">px</option><option value="in">นิ้ว</option><option value="mm">มม.</option><option value="cm">ซม.</option></select></label>
+    <button class="btn pri" onclick="createFromInputs()">สร้างดีไซน์ใหม่</button>
+  </div>
+  <h2 style="font-weight:500;margin:34px 0 8px">ยอดนิยม</h2>
+  <div class="grid" id="presets"></div>
+</section>
+
+<!-- ============ 3) EDITOR ============ -->
+<section id="editor" class="screen">
+  <div class="top">
+    <button onclick="go('home')"><svg><use href="#i-home"/></svg></button>
+    <button>ไฟล์</button>
+    <button onclick="go('size')">ปรับขนาด</button>
+    <span class="sep"></span>
+    <button onclick="undo()" title="Ctrl+Z"><svg><use href="#i-undo"/></svg></button>
+    <button onclick="redo()" title="Ctrl+Y"><svg><use href="#i-redo"/></svg></button>
+    <span class="sep"></span>
+    <button title="บันทึกแล้ว"><svg><use href="#i-check"/></svg></button>
+    <span class="title" id="docTitle">ดีไซน์ที่ไม่มีชื่อ</span>
+    <button class="acct" id="acctTop" onclick="acctClick()" title="บัญชี Pinterest"><svg><use href="#i-pin"/></svg></button>
+    <button class="share" onclick="sheet.classList.toggle('on')"><svg><use href="#i-down"/></svg>ดาวน์โหลด</button>
+  </div>
+  <div class="body">
+    <nav class="rail">
+      <button data-p="pin"><span class="ico"><svg><use href="#i-shapes"/></svg></span>องค์ประกอบ</button>
+      <button data-p="text"><span class="ico"><svg><use href="#i-text"/></svg></span>ข้อความ</button>
+      <button data-p="up"><span class="ico"><svg><use href="#i-cloud"/></svg></span>อัพโหลด</button>
+    </nav>
+    <aside class="panel" id="panel-text" hidden>
+      <label class="pill"><svg><use href="#i-search"/></svg><input id="fontQ" placeholder="ค้นหาฟอนต์"></label>
+      <button class="btn pri" onclick="addText('body')"><svg><use href="#i-text"/></svg>เพิ่มกล่องข้อความ</button>
+      <button class="btn out" onclick="fontFile.click()"><svg><use href="#i-font"/></svg>อัพโหลดฟอนต์ของคุณ (.ttf .otf .woff)</button>
+      <input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
+      <h4>สไตล์ข้อความเริ่มต้น</h4>
+      <button class="tstyle" onclick="addText('h1')" style="font:700 26px Kanit">เพิ่มหัวเรื่อง</button>
+      <button class="tstyle" onclick="addText('h2')" style="font:600 18px Kanit">เพิ่มหัวเรื่องย่อย</button>
+      <button class="tstyle" onclick="addText('body')" style="font:400 14px Sarabun">เพิ่มข้อความในส่วนเนื้อหาเล็กน้อย</button>
+      <h4>ฟอนต์ของคุณ</h4>
+      <div class="fontlist" id="myFonts"><div class="empty">ยังไม่มี — อัพโหลดแล้วจะเก็บไว้ใช้ครั้งหน้า</div></div>
+      <h4>ฟอนต์ทั้งหมด</h4>
+      <div class="hint">เลือกข้อความบนผืนงานแล้วคลิกฟอนต์เพื่อเปลี่ยน</div>
+      <div class="fontlist" id="allFonts"></div>
+    </aside>
+    <aside class="panel" id="panel-pin" hidden>
+      <label class="pill"><svg><use href="#i-pin"/></svg><input id="q" placeholder="ค้นหาใน Pinterest"></label>
+      <h4>วิธีใช้</h4>
+      <ol class="steps">
+        <li>พิมพ์คำค้นแล้วกด Enter — หน้าต่าง Pinterest จะเปิดผลค้นหาให้</li>
+        <li>คลิกเปิด Pin ที่ชอบ</li>
+        <li>กดปุ่มแดง <b>⬇ เก็บรูปนี้เข้า PinCut</b> มุมขวาล่าง</li>
+        <li>รูปจะมาอยู่ใน <b>แท็บอัพโหลด</b> — คลิกเพื่อวางบนผืนงาน</li>
+      </ol>
+      <button class="btn out" onclick="openPanel('up')">ไปที่แท็บอัพโหลด</button>
+    </aside>
+    <aside class="panel" id="panel-up" hidden>
+      <label class="pill"><svg><use href="#i-search"/></svg><input placeholder="ค้นหาคีย์เวิร์ด แท็ก สี"></label>
+      <button class="btn pri" onclick="upFile.click()">อัพโหลดไฟล์</button>
+      <input id="upFile" type="file" accept="image/*" multiple hidden>
+      <div class="tabs"><span class="on">รูป</span></div>
+      <div class="masonry" id="uploads"></div>
+    </aside>
+    <main class="stage" id="stage">
+      <button class="collapse" id="collapse" onclick="openPanel(null)" title="ปิดแผง">‹</button>
+      <div class="ctxbar" id="ctxbar">
+        <button onclick="cutBg()">ตัวลบแบ็คกราวน์</button>
+        <span class="sep"></span>
+        <button onclick="flip()">พลิก</button>
+        <label>ความโปร่งใส<input id="op" type="range" min="0" max="100"></label>
+        <button onclick="toggleMenu()">ตำแหน่ง</button>
+      </div>
+      <div class="ctxbar tbar" id="tbar">
+        <select id="tFont"></select>
+        <button onclick="stepSize(-2)">−</button><input id="tSize" type="number" min="6"><button onclick="stepSize(2)">+</button>
+        <span class="sep"></span>
+        <input id="tColor" type="color" title="สีตัวอักษร">
+        <button class="tg" id="tB" onclick="toggleT('fontWeight','bold','normal')"><b>B</b></button>
+        <button class="tg" id="tI" onclick="toggleT('fontStyle','italic','normal')"><i>I</i></button>
+        <button class="tg" id="tU" onclick="toggleT('underline',true,false)"><u>U</u></button>
+        <span class="sep"></span>
+        <button onclick="cycleAlign()" id="tAlign">ชิดซ้าย</button>
+        <button onclick="toggleMenu()">ตำแหน่ง</button>
+      </div>
+      <div class="float" id="float">
+        <button onclick="lock()" title="ล็อก"><svg><use href="#i-lock"/></svg></button>
+        <button onclick="dup()" title="ทำสำเนา"><svg><use href="#i-copy"/></svg></button>
+        <button onclick="del()" title="ลบ"><svg><use href="#i-trash"/></svg></button>
+        <button onclick="toggleMenu()" title="เพิ่มเติม"><svg><use href="#i-more"/></svg></button>
+      </div>
+      <div class="menu" id="menu">
+        <button onclick="copyObj()"><svg><use href="#i-copy"/></svg>คัดลอก<kbd>Ctrl+C</kbd></button>
+        <button onclick="pasteObj()"><svg><use href="#i-doc"/></svg>วาง<kbd>Ctrl+V</kbd></button>
+        <button onclick="dup()"><svg><use href="#i-copy"/></svg>ทำสำเนา<kbd>Ctrl+D</kbd></button>
+        <button onclick="del()"><svg><use href="#i-trash"/></svg>ลบ<kbd>DELETE</kbd></button>
+        <hr>
+        <button onclick="layer('front')">นำไปไว้หน้าสุด</button>
+        <button onclick="layer(1)">เลื่อนไปข้างหน้า</button>
+        <button onclick="layer(-1)">เลื่อนไปข้างหลัง</button>
+        <button onclick="layer('back')">ส่งไปไว้หลังสุด</button>
+        <button onclick="center()">จัดกึ่งกลางหน้า</button>
+        <hr>
+        <button onclick="lock()"><svg><use href="#i-lock"/></svg>ล็อก</button>
+      </div>
+      <div class="stagein">
+        <div class="pagetools" id="pagetools"><div style="margin-left:auto">
+          <button title="ทำสำเนาหน้า"><svg><use href="#i-copy"/></svg></button>
+          <button title="เพิ่มหน้า"><svg><use href="#i-addpage"/></svg></button></div></div>
+        <div class="page"><canvas id="c"></canvas></div>
+        <button class="addpage" id="addpage">+ เพิ่มหน้า</button>
+      </div>
+    </main>
+  </div>
+  <div class="bottom">
+    <div class="l"><span>📝 สมุดโน้ต</span></div>
+    <div class="r">
+      <input id="zoom" type="range" min="10" max="200" value="50">
+      <span id="zoomTxt" style="width:44px">50%</span>
+      <span>หน้า 1 / 1</span>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <h3><button onclick="sheet.classList.remove('on')">‹</button>ดาวน์โหลด</h3>
+    <div class="lbl">ประเภทไฟล์</div>
+    <div class="fmtlist" id="fmtlist">
+      <button class="fmt" data-f="jpg"><svg><use href="#i-img"/></svg><span>JPG<small>เหมาะสำหรับการแชร์</small></span></button>
+      <button class="fmt" data-f="png"><svg><use href="#i-img"/></svg><span>PNG<small>เหมาะสำหรับรูปภาพและภาพวาดที่มีรายละเอียดซับซ้อน</small></span></button>
+      <button class="fmt on" data-f="pdf"><svg><use href="#i-doc"/></svg><span>PDF<small>เหมาะสำหรับเอกสารและการพิมพ์</small></span></button>
+    </div>
+    <div class="lbl">ค่าที่ตั้งไว้ล่วงหน้า</div>
+    <div class="seg" id="seg"><button class="on" data-m="1">ดิจิทัล</button><button data-m="3.125">งานพิมพ์</button></div>
+    <label class="toggle">พื้นหลังโปร่งใส (PNG)<input type="checkbox" id="transparent"></label>
+    <button class="btn pri" onclick="exportFile()">ดาวน์โหลด</button>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status"></div>
+<div class="modal" id="loginModal" onclick="if(event.target===this)closeLogin()">
+  <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button class="x" onclick="closeLogin()" aria-label="ปิด">✕</button>
+    <div class="mlogo" id="mLogo"><svg><use href="#i-pin"/></svg></div>
+    <h3 id="mTitle"></h3>
+    <p id="mText"></p>
+    <div id="mBtns"></div>
+    <div class="note" id="mNote"></div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='editor')requestAnimationFrame(fit);}
+
+/* ===== sizes ===== */
+const PRESETS=[["เอกสาร (ไซส์ US แนวตั้ง)",8.5,11,"in"],["สตอรี่ของคุณ",1080,1920,"px"],["โพสต์ Instagram (4:5)",1080,1350,"px"],
+ ["เอกสาร (A4 แนวตั้ง)",21,29.7,"cm"],["โพสต์สี่เหลี่ยม",1080,1080,"px"],["YouTube thumbnail",1280,720,"px"],["โลโก้",2000,2000,"px"]];
+const UL={px:'px',in:'นิ้ว',cm:'ซม.',mm:'มม.'};
+const toPx=(v,u)=>Math.round(v*{px:1,in:96,cm:96/2.54,mm:96/25.4}[u]);
+$('presets').innerHTML=PRESETS.map((p,i)=>{const r=p[1]/p[2],tw=r>1?150:150*r,th=r>1?150/r:150;
+ return `<button class="preset" onclick="pickPreset(${i})"><div class="pv"><div style="width:${tw}px;height:${th}px"></div></div><b>${p[0]}</b><small>${p[1]} × ${p[2]} ${UL[p[3]]}</small></button>`}).join('');
+function pickPreset(i){const p=PRESETS[i];newDoc(toPx(p[1],p[3]),toPx(p[2],p[3]),p[0]);}
+function createFromInputs(){newDoc(toPx(+w.value,unit.value),toPx(+h.value,unit.value),`${w.value}×${h.value} ${UL[unit.value]}`);}
+
+/* ===== canvas ===== */
+fabric.Object.prototype.set({cornerStyle:'circle',cornerColor:'#fff',cornerStrokeColor:'#ef5a4c',borderColor:'#ef5a4c',transparentCorners:false,cornerSize:12,padding:0});
+const cv=new fabric.Canvas('c',{backgroundColor:'#fff',preserveObjectStacking:true});
+let docW=1080,docH=1080,zoom=.5,docName='';
+function newDoc(W,H,name){docW=W;docH=H;docName=name;cv.clear();cv.backgroundColor='#fff';$('docTitle').textContent='ดีไซน์ที่ไม่มีชื่อ - '+name;hist=[];hi=-1;save();go('editor');}
+function setZoom(z){zoom=z;cv.setZoom(z);cv.setWidth(docW*z);cv.setHeight(docH*z);$('zoom').value=z*100;$('zoomTxt').textContent=Math.round(z*100)+'%';
+ $('addpage').style.width=$('pagetools').style.width=docW*z+'px';$('pagetools').style.alignSelf='center';placeFloat();}
+function fit(){const s=$('stage');setZoom(Math.min((s.clientWidth-120)/docW,(s.clientHeight-200)/docH,1));}
+$('zoom').oninput=e=>setZoom(e.target.value/100);
+window.onresize=()=>$('editor').classList.contains('on')&&fit();
+function addImage(src,id){fabric.Image.fromURL(src,img=>{img.pincutId=id;const s=Math.min(docW*.6/img.width,docH*.6/img.height,1);
+ img.set({scaleX:s,scaleY:s,left:(docW-img.width*s)/2,top:(docH-img.height*s)/2});cv.add(img).setActiveObject(img);save();},{crossOrigin:'anonymous'});}
+
+/* selection UI: top ctx bar + floating pill above object */
+const act=()=>cv.getActiveObject();
+function placeFloat(){const o=act(),f=$('float');if(!o){f.style.display='none';return;}
+ const r=o.getBoundingRect(),c=cv.upperCanvasEl.getBoundingClientRect(),s=$('stage').getBoundingClientRect(),st=$('stage');
+ f.style.display='flex';f.style.left=(c.left-s.left+st.scrollLeft+r.left+r.width/2-f.offsetWidth/2)+'px';
+ f.style.top=(c.top-s.top+st.scrollTop+r.top-f.offsetHeight-14)+'px';}
+const isText=o=>o&&o.type==='i-text';
+function onSel(){const t=isText(act());if(act())$('op').value=Math.round(act().opacity*100);$('ctxbar').style.display=t?'none':'flex';$('tbar').style.display=t?'flex':'none';if(t)syncTbar();placeFloat();}
+cv.on('selection:created',onSel);cv.on('selection:updated',onSel);
+cv.on('selection:cleared',()=>{$('ctxbar').style.display='none';$('tbar').style.display='none';$('float').style.display='none';$('menu').style.display='none';});
+['object:moving','object:scaling','object:rotating'].forEach(e=>cv.on(e,()=>{$('float').style.display='none';$('menu').style.display='none';}));
+cv.on('object:modified',()=>{save();placeFloat();});$('stage').onscroll=placeFloat;
+function toggleMenu(){const m=$('menu'),f=$('float');if(m.style.display==='flex'){m.style.display='none';return;}
+ m.style.display='flex';m.style.left=(f.offsetLeft+f.offsetWidth-20)+'px';m.style.top=(f.offsetTop+f.offsetHeight+6)+'px';}
+function del(){cv.getActiveObjects().forEach(o=>cv.remove(o));cv.discardActiveObject();cv.requestRenderAll();save();}
+function dup(){const o=act();o&&o.clone(c=>{c.set({left:o.left+30,top:o.top+30});cv.add(c).setActiveObject(c);save();});}
+let clip=null;function copyObj(){const o=act();o&&o.clone(c=>clip=c);$('menu').style.display='none';}
+function pasteObj(){clip&&clip.clone(c=>{c.set({left:c.left+30,top:c.top+30});cv.add(c).setActiveObject(c);save();});$('menu').style.display='none';}
+function flip(){const o=act();if(o){o.set('flipX',!o.flipX);cv.requestRenderAll();save();}}
+function layer(d){const o=act();if(!o)return;({front:()=>o.bringToFront(),back:()=>o.sendToBack(),1:()=>o.bringForward(),'-1':()=>o.sendBackwards()})[d]();cv.requestRenderAll();save();}
+function center(){const o=act();if(o){cv.viewportCenterObject?o.set({left:(docW-o.getScaledWidth())/2,top:(docH-o.getScaledHeight())/2}).setCoords():0;cv.requestRenderAll();save();placeFloat();}}
+function lock(){const o=act();if(!o)return;const l=!o.lockMovementX;o.set({lockMovementX:l,lockMovementY:l,lockRotation:l,lockScalingX:l,lockScalingY:l,hasControls:!l});cv.requestRenderAll();}
+$('op').oninput=e=>{const o=act();if(o){o.set('opacity',e.target.value/100);cv.requestRenderAll();}};$('op').onchange=()=>save();
+async function cutBg(){const o=act();
+ if(!o||o.type!=='image'||!o.pincutId){toast('เลือกรูปจากแท็บอัพโหลดบนผืนงานก่อน');return;}
+ toast('กำลังตัดพื้นหลัง… ครั้งแรกจะช้าเพราะต้องโหลดโมเดล',60000);
+ try{const it=await api().cut_background(o.pincutId);
+  o.setSrc(it.src,()=>{o.pincutId=it.id;cv.requestRenderAll();save();},{crossOrigin:'anonymous'});
+  thumb(it.src,'uploads',()=>addImage(it.src,it.id));toast('ตัดพื้นหลังแล้ว (เก็บไฟล์ใหม่ไว้ในแท็บอัพโหลดด้วย)');}
+ catch(e){toast('ตัดพื้นหลังไม่สำเร็จ: '+(e.message||e),6000);}}
+document.onkeydown=e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)||!$('editor').classList.contains('on'))return;
+ if(e.key==='Delete')del();if(!e.ctrlKey)return;const k=e.key.toLowerCase();
+ if(k==='d'){e.preventDefault();dup();}if(k==='z')undo();if(k==='y')redo();if(k==='c')copyObj();if(k==='v')pasteObj();};
+
+/* undo/redo */
+let hist=[],hi=-1,busy=false;
+function save(){if(busy)return;hist=hist.slice(0,hi+1);hist.push(JSON.stringify(cv.toJSON(['pincutId'])));hi++;}
+function load(i){busy=true;cv.loadFromJSON(hist[i],()=>{cv.renderAll();busy=false;});}
+function undo(){if(hi>0)load(--hi);}function redo(){if(hi<hist.length-1)load(++hi);}
+
+/* ===== left panels ===== */
+/* panels start closed; click rail = open, click again or ‹ = close */
+let openP=null;
+function openPanel(p){openP=p;
+ document.querySelectorAll('#editor .rail button').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
+ ['pin','text','up'].forEach(k=>$('panel-'+k).hidden=p!==k);$('collapse').classList.toggle('on',!!p);
+ requestAnimationFrame(fit);}
+document.querySelectorAll('#editor .rail button').forEach(b=>b.onclick=()=>openPanel(openP===b.dataset.p?null:b.dataset.p));
+function thumb(src,box,onClick,getBtn){const d=document.createElement('div');d.className='it';
+ d.innerHTML=`<img src="${src}">`+(getBtn?'<button class="get">⬇ โหลด</button>':'');
+ if(getBtn)d.querySelector('.get').onclick=e=>{e.stopPropagation();const g=e.currentTarget;if(g.disabled)return;g.disabled=true;g.textContent='✓ อยู่ในอัพโหลด';getBtn(src);};
+ d.onclick=()=>onClick&&onClick(src);const b=$(box);b.querySelector('.empty')?.remove();b.prepend(d);}
+
+/* ===== backend (app.py, via pywebview) ===== */
+const api=()=>window.pywebview.api;
+const ready=new Promise(r=>window.pywebview?r():window.addEventListener('pywebviewready',r));
+let toastT;function toast(t,ms=2500){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),ms);}
+const libThumb=it=>thumb(it.src,'uploads',()=>addImage(it.src,it.id));
+window.onLibraryAdded=it=>{libThumb(it);toast('เก็บรูปเข้าแท็บอัพโหลดแล้ว');};  // called by app.py after "เก็บรูปนี้"
+
+/* Pinterest search: opens the real Pinterest window (logged in) */
+async function runSearch(q){if(!pinUser){showLogin();return;}await ready;api().open_search(q);toast('เปิดผลค้นหาในหน้าต่าง Pinterest แล้ว');}
+$('q').onkeydown=e=>{if(e.key==='Enter'&&q.value.trim())runSearch(q.value.trim());};
+$('homeQ').onkeydown=e=>{if(e.key==='Enter'&&homeQ.value.trim()){q.value=homeQ.value;newDoc(1080,1080,'โพสต์สี่เหลี่ยม');openPanel('pin');runSearch(homeQ.value.trim());}};
+
+/* Pinterest account */
+let pinUser=null,waitLogin=null;
+function renderAcct(){const t=$('acctTop'),r=document.querySelector('.acctR');
+ t.classList.toggle('in',!!pinUser);r.classList.toggle('in',!!pinUser);
+ t.innerHTML=pinUser?pinUser[0].toUpperCase():'<svg><use href="#i-pin"/></svg>';t.title=pinUser?'Pinterest: เชื่อมต่อแล้ว':'Login Pinterest';
+ r.querySelector('.acctIco').innerHTML=pinUser?pinUser[0].toUpperCase():'<svg><use href="#i-pin"/></svg>';
+ r.querySelector('.acctLbl').textContent=pinUser||'Login Pinterest';}
+function setUser(u){pinUser=u;renderAcct();}
+function closeLogin(){$('loginModal').classList.remove('on');clearInterval(waitLogin);}
+function showLogin(){const L=$('mLogo');clearInterval(waitLogin);
+ if(pinUser){L.textContent='P';$('mTitle').textContent='เชื่อมต่อ Pinterest แล้ว';
+  $('mText').textContent='ค้นหาจากแผงองค์ประกอบ แล้วกด "เก็บรูปนี้" ในหน้าต่าง Pinterest รูปจะมาอยู่ในแท็บอัพโหลด';
+  $('mBtns').innerHTML='<button class="btn sec" id="mOut">ออกจากระบบ</button>';$('mNote').textContent='';
+  $('mOut').onclick=async()=>{await api().logout();setUser(null);showLogin();};}
+ else{L.innerHTML='<svg><use href="#i-pin"/></svg>';$('mTitle').textContent='เชื่อมต่อบัญชี Pinterest';
+  $('mText').textContent='Login ด้วยบัญชีของคุณเพื่อค้นหาและโหลดรูปจาก Pinterest มาใช้ในงานออกแบบ';
+  $('mBtns').innerHTML='<button class="btn red" id="mGo">เปิดหน้า Login ของ Pinterest</button>';
+  $('mNote').textContent='รหัสผ่านพิมพ์ในหน้าต่างของ Pinterest เอง PinCut ไม่เห็นและไม่เก็บรหัสผ่าน';
+  $('mGo').onclick=async()=>{const b=$('mGo');b.disabled=true;b.innerHTML='<span class="spin"></span>Login ในหน้าต่าง Pinterest ที่เปิดขึ้น…';
+   await ready;await api().open_login();
+   waitLogin=setInterval(async()=>{if(await api().login_status()){clearInterval(waitLogin);setUser('Pinterest');showLogin();}},2000);};}
+ $('loginModal').classList.add('on');}
+const acctClick=showLogin;
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLogin();});
+renderAcct();
+
+/* uploads: every file is saved into the library folder (Downloads/PinCut) */
+const readFiles=(files,cb)=>[...files].forEach(f=>{const r=new FileReader();r.onload=()=>cb(r.result,f.name);r.readAsDataURL(f);});
+async function saveUpload(src,name){await ready;try{return await api().save_upload(name,src);}catch(e){toast('บันทึกไม่สำเร็จ: '+(e.message||e),5000);}}
+$('upFile').onchange=e=>{readFiles(e.target.files,async(src,name)=>{const it=await saveUpload(src,name);if(it)libThumb(it);});e.target.value='';};
+$('homeUpload').onchange=e=>{readFiles(e.target.files,async(src,name)=>{const it=await saveUpload(src,name);if(!it)return;
+ const im=new Image();im.onload=()=>{newDoc(im.width,im.height,'จากรูปที่อัพโหลด');libThumb(it);addImage(it.src,it.id);};im.src=it.src;});e.target.value='';};
+
+/* startup: login state, library images, saved fonts */
+ready.then(async()=>{setUser(await api().login_status()?'Pinterest':null);
+ (await api().list_library()).reverse().forEach(libThumb);
+ for(const f of await api().list_fonts()){try{await registerFont(f.name,f.data);myFonts.push(f);}catch{}}renderFonts();});
+
+/* ===== text ===== */
+const TSTYLE={h1:{text:'เพิ่มหัวเรื่อง',fontSize:.09,fontWeight:'bold',fontFamily:'Kanit'},
+ h2:{text:'เพิ่มหัวเรื่องย่อย',fontSize:.055,fontWeight:'bold',fontFamily:'Kanit'},
+ body:{text:'เพิ่มข้อความ',fontSize:.035,fontWeight:'normal',fontFamily:'Sarabun'}};
+async function addText(k){const s=TSTYLE[k],size=Math.round(Math.min(docW,docH)*s.fontSize);
+ await document.fonts.load(`${s.fontWeight} ${size}px "${s.fontFamily}"`);
+ const t=new fabric.IText(s.text,{fontFamily:s.fontFamily,fontWeight:s.fontWeight,fontSize:size,fill:'#0e1318'});
+ t.set({left:(docW-t.width)/2,top:(docH-t.height)/2});cv.add(t).setActiveObject(t);t.enterEditing();t.selectAll();save();}
+
+/* fonts: built-in Google fonts + user uploads (saved by app.py into Downloads/PinCut/fonts) */
+const BUILTIN=['Kanit','Prompt','Sarabun','Mitr','Chakra Petch','Itim','Pattaya','Charm','Bai Jamjuree','Arial','Georgia'];
+let myFonts=[];
+function fontRow(name,box,mine){const b=document.createElement('button');b.className='fontrow';b.style.fontFamily=`"${name}"`;
+ b.innerHTML=`${name}<small>${mine?'ของคุณ':'สวัสดี Aa'}</small>`;b.onclick=()=>setFont(name);$(box).append(b);}
+function renderFonts(){const q=$('fontQ').value.toLowerCase(),m=n=>n.toLowerCase().includes(q);
+ $('allFonts').innerHTML='';BUILTIN.filter(m).forEach(n=>fontRow(n,'allFonts'));
+ $('myFonts').innerHTML=myFonts.length?'':'<div class="empty">ยังไม่มี — อัพโหลดแล้วจะเก็บไว้ใช้ครั้งหน้า</div>';
+ myFonts.filter(f=>m(f.name)).forEach(f=>fontRow(f.name,'myFonts',true));
+ $('tFont').innerHTML=[...myFonts.map(f=>f.name),...BUILTIN].map(n=>`<option style="font-family:'${n}'">${n}</option>`).join('');}
+$('fontQ').oninput=renderFonts;
+async function registerFont(name,data){const ff=new FontFace(name,`url(${data})`);await ff.load();document.fonts.add(ff);}
+$('fontFile').onchange=e=>{readFiles(e.target.files,async(data,file)=>{
+ try{await ready;const name=await api().save_font(file,data);await registerFont(name,data);
+  myFonts=myFonts.filter(x=>x.name!==name).concat({name,data});renderFonts();toast('เพิ่มฟอนต์ '+name+' แล้ว');}
+ catch(err){toast('ใช้ฟอนต์นี้ไม่ได้: '+(err.message||err),5000);}});e.target.value='';};
+renderFonts();
+
+/* text toolbar */
+async function setFont(n){const o=act();if(!isText(o))return;await document.fonts.load(`${o.fontWeight} 40px "${n}"`);o.set('fontFamily',n);cv.requestRenderAll();save();syncTbar();}
+function syncTbar(){const o=act();if(!isText(o))return;$('tFont').value=o.fontFamily;$('tSize').value=Math.round(o.fontSize);$('tColor').value=o.fill;
+ $('tB').classList.toggle('on',o.fontWeight==='bold');$('tI').classList.toggle('on',o.fontStyle==='italic');$('tU').classList.toggle('on',!!o.underline);
+ $('tAlign').textContent={left:'ชิดซ้าย',center:'กึ่งกลาง',right:'ชิดขวา'}[o.textAlign]||'ชิดซ้าย';}
+$('tFont').onchange=e=>setFont(e.target.value);
+$('tSize').onchange=e=>{const o=act();if(isText(o)){o.set('fontSize',Math.max(6,+e.target.value));cv.requestRenderAll();save();placeFloat();}};
+function stepSize(d){const o=act();if(isText(o)){o.set('fontSize',Math.max(6,o.fontSize+d));cv.requestRenderAll();save();syncTbar();placeFloat();}}
+$('tColor').oninput=e=>{const o=act();if(isText(o)){o.set('fill',e.target.value);cv.requestRenderAll();}};$('tColor').onchange=save;
+function toggleT(k,on,off){const o=act();if(isText(o)){o.set(k,o[k]===on?off:on);cv.requestRenderAll();save();syncTbar();}}
+function cycleAlign(){const o=act();if(isText(o)){const a=['left','center','right'];o.set('textAlign',a[(a.indexOf(o.textAlign)+1)%3]);cv.requestRenderAll();save();syncTbar();}}
+cv.on('text:changed',placeFloat);cv.on('text:editing:exited',save);
+
+/* ===== download sheet ===== */
+let fmt='pdf',mult=1;
+document.querySelectorAll('.fmt').forEach(b=>b.onclick=()=>{fmt=b.dataset.f;document.querySelectorAll('.fmt').forEach(x=>x.classList.toggle('on',x===b));});
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{mult=+b.dataset.m;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x===b));});
+async function exportFile(){cv.discardActiveObject();const bg=cv.backgroundColor;
+ if(fmt==='png'&&$('transparent').checked)cv.backgroundColor=null;cv.renderAll();
+ const url=cv.toDataURL({format:fmt==='jpg'?'jpeg':'png',quality:.92,multiplier:mult/zoom});cv.backgroundColor=bg;cv.renderAll();let data=url;
+ if(fmt==='pdf'){const pdf=new jspdf.jsPDF({orientation:docW>docH?'l':'p',unit:'px',format:[docW,docH]});pdf.addImage(url,'PNG',0,0,docW,docH);data=pdf.output('datauristring');}
+ $('sheet').classList.remove('on');
+ try{const path=await api().save_export(data,fmt);if(path){toast('บันทึกแล้ว: '+path,4000);addRecent(url);}}
+ catch(e){toast('บันทึกไม่สำเร็จ: '+(e.message||e),5000);}}
+function addRecent(url){const r=$('recent');r.querySelector('.empty')?.remove();const d=document.createElement('div');d.className='card';
+ d.innerHTML=`<div class="pv"><img src="${url}"></div><b>ดีไซน์ที่ไม่มีชื่อ</b><small>${docName}</small>`;r.prepend(d);}
+</script>
+</body>
+</html>
