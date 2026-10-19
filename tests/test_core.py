@@ -155,3 +155,11 @@ def test_export_name_keeps_thai_and_drops_path_chars():
     assert core.export_name("ดีไซน์ที่ไม่มีชื่อ", "png") == "ดีไซน์ที่ไม่มีชื่อ.png"
     assert core.export_name('../a:b*"c', "pdf") == "_a_b__c.pdf"
     assert core.export_name("  ", "jpg") == "design.jpg"
+
+
+def test_save_design_keeps_extra_pages_and_can_drop_them(tmp_path):
+    d = designs_dir(tmp_path)
+    core.save_design(d, {"id": "d1", "canvas": {"objects": []}, "more": [{"objects": [{}]}, {"objects": []}]})
+    assert len(core.load_design(d, "d1")["more"]) == 2
+    core.save_design(d, {"id": "d1", "canvas": {"objects": []}, "more": []})
+    assert core.load_design(d, "d1")["more"] == []

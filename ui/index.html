@@ -188,6 +188,7 @@ input.f,select.f{font:inherit;padding:10px 12px;font-size:16px;border:1px solid 
 .adv .f{padding:9px 10px;background:var(--bg);border-color:transparent}.adv .btn{height:41px;justify-content:center}
 .stage{flex:1;background:var(--bg);position:relative;overflow:auto}
 .stagein{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px 40px}
+.pnav{display:flex;align-items:center;gap:4px}.pnav button{width:28px;height:28px;border-radius:8px;font-size:18px}.pnav button:hover{background:var(--bg)}.pnav button:disabled{opacity:.35}
 .pagetools{align-self:stretch;display:flex;justify-content:center}
 .pagetools div{display:flex;gap:6px;color:var(--mut)}.pagetools button{padding:6px;border-radius:8px}.pagetools button:hover{background:#e3e5e9}
 .page{box-shadow:0 2px 8px #0000001a}
@@ -390,6 +391,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
     </aside>
     <aside class="panel" id="panel-bg" hidden>
       <h4 id="colorTitle">สีพื้นหลัง</h4>
+      <button class="btn out" id="bgImgOff" hidden>ลบรูปพื้นหลัง</button>
       <div class="hint">เลือกชิ้นงานบนผืนงานเพื่อเปลี่ยนสีชิ้นนั้น ไม่เลือกอะไร = เปลี่ยนสีพื้นหลัง</div>
       <div class="cpick"><input type="color" id="bgColor" value="#ffffff" aria-label="เลือกสีเอง"><input id="bgHex" class="f" maxlength="7" aria-label="รหัสสี" placeholder="#BE3455"></div>
       <h4>สีในดีไซน์นี้</h4><div class="swatches" id="docSw"></div>
@@ -535,10 +537,11 @@ input[type=range]{accent-color:var(--acc);width:150px}
       </div>
       <div class="stagein">
         <div class="pagetools" id="pagetools"><div style="margin-left:auto">
-          <button title="ทำสำเนาหน้า"><svg><use href="#i-copy"/></svg></button>
-          <button title="เพิ่มหน้า"><svg><use href="#i-addpage"/></svg></button></div></div>
+          <button onclick="dupPage()" title="ทำสำเนาหน้า" aria-label="ทำสำเนาหน้า"><svg><use href="#i-copy"/></svg></button>
+          <button onclick="addPage()" title="เพิ่มหน้า" aria-label="เพิ่มหน้า"><svg><use href="#i-addpage"/></svg></button>
+          <button onclick="delPage()" title="ลบหน้านี้" aria-label="ลบหน้านี้"><svg><use href="#i-trash"/></svg></button></div></div>
         <div class="page"><canvas id="c"></canvas></div>
-        <button class="addpage" id="addpage">+ เพิ่มหน้า</button>
+        <button class="addpage" id="addpage" onclick="addPage()">+ เพิ่มหน้า</button>
       </div>
     </main>
   </div>
@@ -547,7 +550,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
     <div class="r">
       <input id="zoom" type="range" min="10" max="200" value="50">
       <span id="zoomTxt" style="width:44px">50%</span>
-      <span>หน้า 1 / 1</span>
+      <span class="pnav"><button onclick="gotoPage(pageIx-1)" aria-label="หน้าก่อนหน้า">‹</button><span id="pageInfo">หน้า 1 / 1</span><button onclick="gotoPage(pageIx+1)" aria-label="หน้าถัดไป">›</button></span>
     </div>
   </div>
 
@@ -601,12 +604,12 @@ function createFromInputs(){newDoc(toPx(+w.value,unit.value),toPx(+h.value,unit.
 fabric.Object.prototype.set({cornerStyle:'circle',cornerColor:'#fff',cornerStrokeColor:'#be3455',borderColor:'#be3455',transparentCorners:false,cornerSize:12,padding:0});
 const cv=new fabric.Canvas('c',{backgroundColor:'#fff',preserveObjectStacking:true});
 fabric.filterBackend=new fabric.Canvas2dFilterBackend();  // WebGL backend caps images at 2048px; 2d is slower but takes any size
-const PROPS=['pincutId','name','fx','upper','lower','lockMovementX','lockMovementY','lockRotation','lockScalingX','lockScalingY','hasControls'];  // custom/lock state kept in undo + saved designs
+const PROPS=['pincutId','name','fx','crop','upper','lower','lockMovementX','lockMovementY','lockRotation','lockScalingX','lockScalingY','hasControls'];  // custom/lock state kept in undo + saved designs
 const UNTITLED='ดีไซน์ที่ไม่มีชื่อ';
-let docW=1080,docH=1080,zoom=.5,docId=null,docName=UNTITLED,docKind='',docSize='';
+let docW=1080,docH=1080,zoom=.5,docId=null,docName=UNTITLED,docKind='',docSize='',pages=[null],pageIx=0;
 const newId=()=>'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function newDoc(W,H,kind,size){flushSave();docId=newId();docW=W;docH=H;docName=UNTITLED;docKind=kind;docSize=size||`${W} × ${H} px`;
- cv.clear();cv.backgroundColor='#fff';$('docTitle').value=docName;hist=[];hi=-1;save();go('editor');}
+ pages=[null];pageIx=0;cv.clear();cv.backgroundColor='#fff';$('docTitle').value=docName;hist=[];hi=-1;save();renderPageUI();go('editor');}
 $('docTitle').onchange=e=>{docName=e.target.value.trim()||UNTITLED;e.target.value=docName;scheduleSave();};
 $('docTitle').onkeydown=e=>{if(e.key==='Enter'||e.key==='Escape')e.target.blur();};
 
@@ -617,15 +620,24 @@ function setSaveState(s){const b=$('saveState'),t={ok:'บันทึกแล�
 function scheduleSave(){if(!docId)return;clearTimeout(saveT);setSaveState('pending');saveT=setTimeout(flushSave,800);}
 function thumbOf(){return cv.toDataURL({format:'jpeg',quality:.9,multiplier:Math.min(1,720/Math.max(docW,docH))/zoom});}
 function flushSave(){if(!saveT)return saving;clearTimeout(saveT);saveT=null;
- const doc={id:docId,name:docName,kind:docKind,size:docSize,w:docW,h:docH,canvas:cv.toJSON(PROPS),thumb:thumbOf()};
+ const all=allPages(),doc={id:docId,name:docName,kind:docKind,size:docSize,w:docW,h:docH,canvas:all[0],more:all.slice(1),thumb:thumbOf()};
  saving=saving.then(()=>api().save_design(doc)).then(m=>{upsert(m);setSaveState('ok');},
   e=>{setSaveState('err');toast('บันทึกดีไซน์ไม่สำเร็จ: '+(e.message||e),5000);});
  return saving;}
 async function openDesign(id){let d;try{d=await api().load_design(id);}catch(e){toast('เปิดดีไซน์ไม่ได้: '+(e.message||e),5000);return;}
  await flushSave();closeDrawer();clearSel();showDoc(d,()=>setSaveState('ok'));}
 function showDoc(d,done){docId=d.id;docW=d.w;docH=d.h;docName=d.name||UNTITLED;docKind=d.kind||'';docSize=d.size||'';$('docTitle').value=docName;
- busy=true;cv.loadFromJSON(d.canvas||{},()=>{cv.renderAll();busy=false;hist=[JSON.stringify(cv.toJSON(PROPS))];hi=0;done();});
- go('editor');}
+ pages=[d.canvas||{},...(Array.isArray(d.more)?d.more:[])];pageIx=0;showPage(done);go('editor');}
+const allPages=()=>pages.map((p,i)=>i===pageIx?cv.toJSON(PROPS):p);
+function showPage(done){busy=true;cv.loadFromJSON(pages[pageIx]||{background:'#ffffff',objects:[]},()=>{cv.renderAll();busy=false;
+ hist=[JSON.stringify(cv.toJSON(PROPS))];hi=0;renderPageUI();renderLayers();if(typeof renderPanels==='function')renderPanels();done&&done();});}  // undo history is per page
+function gotoPage(i){if(i<0||i>=pages.length||i===pageIx)return;pages[pageIx]=cv.toJSON(PROPS);pageIx=i;cv.discardActiveObject();showPage();}
+function addPage(json){pages[pageIx]=cv.toJSON(PROPS);pages.splice(pageIx+1,0,json||{background:'#ffffff',objects:[]});pageIx++;cv.discardActiveObject();showPage(scheduleSave);}
+function dupPage(){addPage(cv.toJSON(PROPS));toast('ทำสำเนาหน้าแล้ว');}
+function delPage(){if(pages.length<2)return toast('ดีไซน์ต้องมีอย่างน้อย 1 หน้า');const gone=cv.toJSON(PROPS),at=pageIx;
+ pages.splice(pageIx,1);pageIx=Math.min(pageIx,pages.length-1);cv.discardActiveObject();
+ showPage(()=>{scheduleSave();toast(`ลบหน้า ${at+1} แล้ว`,6000,{label:'ย้อนกลับ',fn:()=>{pages[pageIx]=cv.toJSON(PROPS);pages.splice(at,0,gone);pageIx=at;showPage(scheduleSave);}});});}
+function renderPageUI(){$('pageInfo').textContent=`หน้า ${pageIx+1} / ${pages.length}`;const [a,b]=document.querySelectorAll('.pnav button');a.disabled=!pageIx;b.disabled=pageIx>=pages.length-1;}
 function setZoom(z){zoom=z;cv.setZoom(z);cv.setWidth(docW*z);cv.setHeight(docH*z);$('zoom').value=z*100;$('zoomTxt').textContent=Math.round(z*100)+'%';
  $('addpage').style.width=$('pagetools').style.width=docW*z+'px';$('pagetools').style.alignSelf='center';placeFloat();}
 function fit(){const s=$('stage');setZoom(Math.min((s.clientWidth-120)/docW,(s.clientHeight-200)/docH,1));}
@@ -996,6 +1008,8 @@ cv.on('text:changed',placeFloat);cv.on('text:editing:exited',save);
 let fmt='pdf',mult=1;
 document.querySelectorAll('.fmt').forEach(b=>b.onclick=()=>{fmt=b.dataset.f;document.querySelectorAll('.fmt').forEach(x=>x.classList.toggle('on',x===b));});
 document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{mult=+b.dataset.m;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x===b));});
+function renderJSON(j,m=1){return new Promise(r=>{const sc=new fabric.StaticCanvas(document.createElement('canvas'),{width:docW,height:docH,enableRetinaScaling:false});
+ sc.loadFromJSON(j,()=>{sc.renderAll();r(sc.toDataURL({format:'png',multiplier:m}));sc.dispose();});});}
 async function exportFile(){cv.discardActiveObject();
  if(fmt==='svg'){$('sheet').classList.remove('on');
   const svg=cv.toSVG({width:docW,height:docH,viewBox:{x:0,y:0,width:docW,height:docH}});
@@ -1004,7 +1018,9 @@ async function exportFile(){cv.discardActiveObject();
  const bg=cv.backgroundColor;
  if(fmt==='png'&&$('transparent').checked)cv.backgroundColor=null;cv.renderAll();
  const url=cv.toDataURL({format:fmt==='jpg'?'jpeg':'png',quality:.92,multiplier:mult/zoom});cv.backgroundColor=bg;cv.renderAll();let data=url;
- if(fmt==='pdf'){const pdf=new jspdf.jsPDF({orientation:docW>docH?'l':'p',unit:'px',format:[docW,docH]});pdf.addImage(url,'PNG',0,0,docW,docH);data=pdf.output('datauristring');}
+ if(fmt==='pdf'){const pdf=new jspdf.jsPDF({orientation:docW>docH?'l':'p',unit:'px',format:[docW,docH]});
+  for(const [i,pj] of allPages().entries()){if(i)pdf.addPage([docW,docH],docW>docH?'l':'p');pdf.addImage(i===pageIx?url:await renderJSON(pj,mult),'PNG',0,0,docW,docH);}
+  data=pdf.output('datauristring');}
  $('sheet').classList.remove('on');
  try{const path=await api().save_export(data,fmt,docName);if(path)toast('บันทึกแล้ว: '+path,4000);}
  catch(e){toast('บันทึกไม่สำเร็จ: '+(e.message||e),5000);}}
@@ -1049,11 +1065,12 @@ function photoColors(){const n=new Map();  // dominant colours of the images on 
    for(let i=0;i<d.length;i+=4){const k='#'+[d[i],d[i+1],d[i+2]].map(v=>Math.min(255,(v>>5<<5)+16).toString(16).padStart(2,'0')).join('');n.set(k,(n.get(k)||0)+1);}}catch{}});
  return [...n].sort((a,b)=>b[1]-a[1]).slice(0,6).map(e=>e[0]);}
 function renderBg(){if(openP!=='bg')return;const im=duoImg(),o=colorTarget(),cur=im?(im.fx?.duo||DUO)[duoSlot]:o?o[colorKey(o)]:cv.backgroundColor,h=hex(cur);
- $('colorTitle').textContent=im?(duoSlot?'ภาพสองสี: สีไฮไลต์':'ภาพสองสี: สีเงามืด'):o?'สีของ '+lname(o):'สีพื้นหลัง';$('bgColor').value=h;$('bgHex').value=h.toUpperCase();
+ $('bgImgOff').hidden=!cv.backgroundImage||!!(im||o);$('colorTitle').textContent=im?(duoSlot?'ภาพสองสี: สีไฮไลต์':'ภาพสองสี: สีเงามืด'):o?'สีของ '+lname(o):'สีพื้นหลัง';$('bgColor').value=h;$('bgHex').value=h.toUpperCase();
  const used=[...new Set([cv.backgroundColor,...cv.getObjects().flatMap(x=>[x.fill,x.stroke])].filter(c=>typeof c==='string'&&c).map(hex))].slice(0,12);
  swatches('docSw',used,h,c=>paint(c,true));swatches('bgSw',SWATCH,h,c=>paint(c,true));
  const ph=photoColors();$('photoBox').hidden=!ph.length;swatches('photoSw',ph,h,c=>paint(c,true));
  $('gradSw').innerHTML=GRADS.map((g,i)=>`<button style="background:linear-gradient(135deg,${g.join(',')})" data-g="${i}" aria-label="กราเดียนต์ ${g.join(' ถึง ')}"></button>`).join('');}
+$('bgImgOff').onclick=()=>{cv.setBackgroundImage(null,()=>{cv.requestRenderAll();save();renderBg();});};
 $('gradSw').onclick=e=>{const i=e.target.dataset.g;if(i==null)return;const o=colorTarget();paint(gradient(GRADS[i],o),true);};
 $('bgColor').oninput=e=>paint(e.target.value);$('bgColor').onchange=e=>paint(e.target.value,true);
 $('bgHex').onchange=e=>{const v=e.target.value.trim().replace(/^#?/,'#');if(/^#[0-9a-f]{6}$/i.test(v))paint(v,true);else{toast('รหัสสีต้องเป็นแบบ #BE3455');renderBg();}};
@@ -1192,6 +1209,8 @@ fabric.Image.filters.Duotone.fromObject=fabric.Image.filters.BaseFilter.fromObje
 const DUO=['#2d2a8c','#be3455'];
 const FILT={duo:v=>new fabric.Image.filters.Duotone({dark:v[0],light:v[1]}),brightness:v=>new fabric.Image.filters.Brightness({brightness:v/100}),contrast:v=>new fabric.Image.filters.Contrast({contrast:v/100}),
  saturation:v=>new fabric.Image.filters.Saturation({saturation:v/100}),blur:v=>new fabric.Image.filters.Blur({blur:v/100}),gray:()=>new fabric.Image.filters.Grayscale()};
+const dashOf=o=>!o.strokeDashArray?'solid':o.strokeDashArray[0]>o.strokeWidth*1.5?'dash':'dot';
+const dash=o=>`<label class="toggle">รูปแบบเส้น<select class="f" data-k="dash" style="width:auto">${[['solid','เส้นทึบ'],['dash','เส้นประ'],['dot','จุด']].map(([v,l])=>`<option value="${v}" ${dashOf(o)===v?'selected':''}>${l}</option>`).join('')}</select></label>`;
 function renderFx(){const o=act(),box=$('fxBody');
  if(!o||o.type==='activeSelection'){box.innerHTML='<h4>เอฟเฟกต์</h4><div class="empty">เลือกองค์ประกอบหนึ่งชิ้นบนผืนงานก่อน</div>';return;}
  const rng=(k,l,min,max,v)=>`<label class="fxr"><span>${l}<output>${v}</output></span><input type="range" data-k="${k}" min="${min}" max="${max}" value="${v}"></label>`;
@@ -1201,9 +1220,11 @@ function renderFx(){const o=act(),box=$('fxBody');
   rng('saturation','ความอิ่มสี',-100,100,f.saturation||0),rng('blur','เบลอ',0,100,f.blur||0),chk('gray','ขาวดำ',f.gray),chk('duoOn','ภาพสองสี (Duotone)',f.duo),
   '<button class="btn out" data-k="reset">ล้างการปรับแต่งรูป</button>','<h4>เส้นขอบรูป</h4>',col('stroke','สีขอบ',o.stroke||'#ffffff'),
   rng('strokeWidth','ความหนา',0,40,o.stroke?Math.round(o.strokeWidth*o.scaleX):0),
-  rng('rx','มุมโค้ง',0,Math.round(Math.min(o.getScaledWidth(),o.getScaledHeight())/2),Math.round((o.clipPath?.rx||0)*o.scaleX)));
- else if(strokeColored(o))rows.push('<h4>เส้น</h4>',rng('strokeWidth','ความหนา',1,80,Math.round(o.strokeWidth)));
- else if(o.type!=='group')rows.push(`<h4>${isText(o)?'ขอบตัวอักษร':'เส้นขอบ'}</h4>`,col('stroke','สีขอบ',o.stroke||'#0e1318'),rng('strokeWidth','ความหนา',0,isText(o)?20:60,o.stroke?Math.round(o.strokeWidth):0));
+  rng('rx','มุมโค้ง',0,Math.round(Math.min(o.getScaledWidth(),o.getScaledHeight())/2),Math.round((o.clipPath?.rx||0)*o.scaleX)),
+  '<h4>ครอป (% จากแต่ละด้าน)</h4>',...['ซ้าย','บน','ขวา','ล่าง'].map((l,i)=>rng('crop'+i,l,0,45,(o.crop||[0,0,0,0])[i])),
+  '<button class="btn out" data-k="asbg">ใช้รูปนี้เป็นพื้นหลังหน้า</button>');
+ else if(strokeColored(o))rows.push('<h4>เส้น</h4>',rng('strokeWidth','ความหนา',1,80,Math.round(o.strokeWidth)),dash(o));
+ else if(o.type!=='group')rows.push(`<h4>${isText(o)?'ขอบตัวอักษร':'เส้นขอบ'}</h4>`,col('stroke','สีขอบ',o.stroke||'#0e1318'),rng('strokeWidth','ความหนา',0,isText(o)?20:60,o.stroke?Math.round(o.strokeWidth):0),...(isText(o)?[]:[dash(o)]));
  if(isText(o))rows.push('<h4>ระยะห่าง</h4>',rng('charSpacing','ระยะห่างตัวอักษร',-200,800,Math.round(o.charSpacing||0)),rng('lineHeight','ระยะห่างบรรทัด',50,300,Math.round((o.lineHeight||1.16)*100)),
   '<h4>ความโปร่งใส</h4>',rng('opacity','ความทึบ',0,100,Math.round(o.opacity*100)));
  if(o.type==='rect')rows.push(rng('rx','มุมโค้ง',0,Math.round(Math.min(o.width,o.height)/2),Math.round(o.rx||0)));
@@ -1217,6 +1238,10 @@ function applyFx(o,k,v){o.dirty=true;
  if(k==='strokeWidth')return strokeColored(o)?o.set('strokeWidth',v):o.set({strokeWidth:v,stroke:v?$('fxBody').querySelector('[data-k=stroke]').value:null,paintFirst:'stroke'});
  if(k==='stroke')return o.set({stroke:v,strokeWidth:o.stroke?o.strokeWidth:Math.max(2,Math.round(Math.min(o.width,o.height)/60)),paintFirst:'stroke'});
  if(k==='duoOn')return applyFx(o,'duo',v?[...DUO]:0);
+ if(k==='dash'){const w=Math.max(1,o.strokeWidth);return o.set({strokeDashArray:{solid:null,dash:[w*3,w*2],dot:[0.01,w*2]}[v],strokeLineCap:v==='dot'?'round':o.strokeLineCap});}
+ if(k.startsWith('crop')&&o.type==='image'){const c=[...(o.crop||[0,0,0,0])];c[+k[4]]=v;const {width:W,height:H}=o.getOriginalSize(),ox=o.cropX,oy=o.cropY;
+  o.set({crop:c,cropX:W*c[0]/100,cropY:H*c[1]/100,width:W*(1-(c[0]+c[2])/100),height:H*(1-(c[1]+c[3])/100)});
+  return o.set({left:o.left+(o.cropX-ox)*o.scaleX,top:o.top+(o.cropY-oy)*o.scaleY});}  // shortcut: keeps position only for unrotated images
  if(k==='charSpacing')return o.set('charSpacing',v);if(k==='lineHeight')return o.set('lineHeight',v/100);if(k==='opacity')return o.set('opacity',v/100);
  if(k==='rx'&&o.type==='image'){const r=v/o.scaleX;return o.set('clipPath',r?new fabric.Rect({width:o.width,height:o.height,rx:r,ry:r,originX:'center',originY:'center'}):null);}  // clipPath is in unscaled image px
  if(k==='rx')return o.set({rx:v,ry:v});
@@ -1227,7 +1252,10 @@ const fxVal=el=>el.type==='checkbox'?el.checked:el.type==='range'?+el.value:el.v
 $('fxBody').oninput=e=>{const el=e.target,k=el.dataset.k,o=act();if(!k||!o)return;applyFx(o,k,fxVal(el));
  const out=el.closest('.fxr')?.querySelector('output');if(out)out.textContent=el.value;cv.requestRenderAll();};
 $('fxBody').onchange=e=>{const k=e.target.dataset.k;if(!k||!act())return;save();if(['shadow','stroke','strokeWidth','duoOn'].includes(k)){renderFx();onSelColor();}};
-$('fxBody').onclick=e=>{if(e.target.dataset.k!=='reset'||!act())return;applyFx(act(),'reset');cv.requestRenderAll();save();renderFx();};
+$('fxBody').onclick=e=>{const o=act();if(e.target.dataset.k==='asbg'&&o?.type==='image'){o.clone(c=>{const sc=Math.max(docW/c.width,docH/c.height);
+  c.set({scaleX:sc,scaleY:sc,left:(docW-c.width*sc)/2,top:(docH-c.height*sc)/2,angle:0,originX:'left',originY:'top',clipPath:null,stroke:null,shadow:null});
+  cv.remove(o);cv.discardActiveObject();cv.setBackgroundImage(c,()=>{cv.requestRenderAll();save();toast('ตั้งเป็นพื้นหลังแล้ว — ลบได้ที่แผงสี',4000);});});return;}
+ if(e.target.dataset.k!=='reset'||!act())return;applyFx(act(),'reset');cv.requestRenderAll();save();renderFx();};
 
 /* ===== file menu: open / save an editable design file (.json) ===== */
 const dataUrl=(text,type)=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(new Blob([text],{type}));});
@@ -1237,7 +1265,7 @@ $('fileBtn').onclick=e=>{e.stopPropagation();const b=e.currentTarget;if(fmOpen==
   <button data-a="save" role="menuitem"><svg><use href="#i-down"/></svg>บันทึกเป็นไฟล์ดีไซน์ (.json)</button><hr>
   <button data-a="dl" role="menuitem"><svg><use href="#i-img"/></svg>ดาวน์โหลด PNG / JPG / PDF / SVG</button>`;
  const A={new:()=>go('size'),open:()=>$('jsonFile').click(),dl:()=>$('sheet').classList.add('on'),
-  save:async()=>{const j={format:'pincut-design',version:1,name:docName,kind:docKind,size:docSize,w:docW,h:docH,canvas:cv.toJSON(PROPS)};
+  save:async()=>{const all=allPages(),j={format:'pincut-design',version:1,name:docName,kind:docKind,size:docSize,w:docW,h:docH,canvas:all[0],more:all.slice(1)};
    try{const path=await api().save_export(await dataUrl(JSON.stringify(j),'application/json'),'json',docName);if(path)toast('บันทึกแล้ว: '+path,4000);}
    catch(err){toast('บันทึกไม่สำเร็จ: '+(err.message||err),5000);}}};
  m.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>{closeFileMenu();A[x.dataset.a]();});placePop(m,b);};
