@@ -176,7 +176,7 @@ input.f,select.f{font:inherit;padding:10px 12px;font-size:16px;border:1px solid 
 .tpl:hover .pv{background:#e8eaed}.tpl img{max-width:86%;max-height:130px;box-shadow:0 2px 6px #0002}
 .tpl b{display:block;font-weight:500;font-size:14px;margin-top:8px}.tpl small{color:var(--mut);font-size:12px}
 .menu .alignrow{display:flex;gap:2px}.menu .alignrow button{flex:1;justify-content:center;padding:8px 0}
-.ctxbar .ib{padding:7px 8px}.chipc.off{opacity:.45}
+.ctxbar .ib{padding:7px 8px}.ctxbar .tg.on{background:var(--accSoft);color:var(--acc)}.chipc.off{opacity:.45}
 .chipc{width:30px;height:30px;border-radius:50%!important;padding:0!important;border:1px solid #0000002a!important;margin:0 4px}
 .cpick{display:flex;gap:8px}.cpick input[type=color]{width:46px;height:42px;padding:3px;border:1px solid var(--line);border-radius:10px;background:#fff}
 .tabs2{display:flex;border-bottom:1px solid var(--line)}.tabs2 button{flex:1;padding:10px;font-size:16px;color:var(--mut);border-bottom:3px solid transparent}
@@ -273,6 +273,9 @@ input[type=range]{accent-color:var(--acc);width:150px}
   <symbol id="i-al-b" viewBox="0 0 24 24"><path d="M3 20h18M7 4h4v12H7zM14 9h4v7h-4z"/></symbol>
   <symbol id="i-border" viewBox="0 0 24 24"><path d="M4 6h16" stroke-width="1.5"/><path d="M4 11h16" stroke-width="2.6"/><path d="M4 17h16" stroke-width="4"/></symbol>
   <symbol id="i-corner" viewBox="0 0 24 24"><path d="M5 20V12a7 7 0 017-7h8"/></symbol>
+  <symbol id="i-spacing" viewBox="0 0 24 24"><path d="M7 4h10M12 4v11M3 19h18M6 16l-3 3 3 3M18 16l3 3-3 3"/></symbol>
+  <symbol id="i-paint" viewBox="0 0 24 24"><rect x="4" y="3" width="14" height="6" rx="1.5"/><path d="M18 6h2v5h-8v3M11 14h2v7h-2z"/></symbol>
+  <symbol id="i-alpha" viewBox="0 0 24 24"><path d="M4 4h4v4H4zM12 4h4v4h-4zM8 8h4v4H8zM16 8h4v4h-4zM4 12h4v4H4zM12 12h4v4h-4zM8 16h4v4H8zM16 16h4v4h-4z" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M11 8h2a2.5 2.5 0 010 5h-2M11 8l-2 10"/></symbol>
 </svg>
 
@@ -476,6 +479,8 @@ input[type=range]{accent-color:var(--acc);width:150px}
         <label>ความโปร่งใส<input id="op" type="range" min="0" max="100"></label>
         <button class="notImg" onclick="openPanel('fx')">เอฟเฟกต์</button>
         <button onclick="openPos('arr')">ตำแหน่ง</button>
+        <span class="sep"></span>
+        <button class="tg ib paintBtn" onclick="copyStyle()" title="คัดลอกรูปแบบ (Ctrl+Alt+C)" aria-label="คัดลอกรูปแบบ"><svg><use href="#i-paint"/></svg></button>
       </div>
       <div class="ctxbar tbar" id="tbar">
         <select id="tFont"></select>
@@ -484,11 +489,18 @@ input[type=range]{accent-color:var(--acc);width:150px}
         <button class="chipc" id="tColor" onclick="openPanel('bg')" title="สีตัวอักษร" aria-label="สีตัวอักษร"></button>
         <button class="tg" id="tB" onclick="toggleT('fontWeight','bold','normal')"><b>B</b></button>
         <button class="tg" id="tI" onclick="toggleT('fontStyle','italic','normal')"><i>I</i></button>
-        <button class="tg" id="tU" onclick="toggleT('underline',true,false)"><u>U</u></button>
+        <button class="tg" id="tU" onclick="toggleT('underline',true,false)" title="ขีดเส้นใต้" aria-label="ขีดเส้นใต้"><u>U</u></button>
+        <button class="tg" id="tS" onclick="toggleT('linethrough',true,false)" title="ขีดฆ่า" aria-label="ขีดฆ่า"><s>S</s></button>
+        <button class="tg" id="tCase" onclick="toggleCase()" title="ตัวพิมพ์ใหญ่ทั้งหมด" aria-label="ตัวพิมพ์ใหญ่ทั้งหมด">aA</button>
         <span class="sep"></span>
         <button onclick="cycleAlign()" id="tAlign">ชิดซ้าย</button>
+        <button class="tg ib" id="tList" onclick="toggleList()" title="รายการแบบจุด" aria-label="รายการแบบจุด"><svg><use href="#i-list"/></svg></button>
+        <button class="ib" onclick="openPanel('fx')" title="ระยะห่าง" aria-label="ระยะห่างตัวอักษรและบรรทัด"><svg><use href="#i-spacing"/></svg></button>
+        <button class="ib" onclick="openPanel('fx')" title="ความโปร่งใส" aria-label="ความโปร่งใส"><svg><use href="#i-alpha"/></svg></button>
         <button onclick="openPanel('fx')">เอฟเฟกต์</button>
         <button onclick="openPos('arr')">ตำแหน่ง</button>
+        <span class="sep"></span>
+        <button class="tg ib paintBtn" onclick="copyStyle()" title="คัดลอกรูปแบบ (Ctrl+Alt+C)" aria-label="คัดลอกรูปแบบ"><svg><use href="#i-paint"/></svg></button>
       </div>
       <div class="float" id="float">
         <button onclick="lock()" title="ล็อก"><svg><use href="#i-lock"/></svg></button>
@@ -498,6 +510,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
       </div>
       <div class="menu" id="menu">
         <button onclick="copyObj()"><svg><use href="#i-copy"/></svg>คัดลอก<kbd>Ctrl+C</kbd></button>
+        <button onclick="copyStyle()"><svg><use href="#i-paint"/></svg>รูปแบบการคัดลอก<kbd>Ctrl+Alt+C</kbd></button>
         <button onclick="pasteObj()"><svg><use href="#i-doc"/></svg>วาง<kbd>Ctrl+V</kbd></button>
         <button onclick="dup()"><svg><use href="#i-copy"/></svg>ทำสำเนา<kbd>Ctrl+D</kbd></button>
         <button onclick="del()"><svg><use href="#i-trash"/></svg>ลบ<kbd>DELETE</kbd></button>
@@ -518,7 +531,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
         <button onclick="groupSel()">จัดกลุ่ม<kbd>Ctrl+G</kbd></button>
         <button onclick="ungroupSel()">ยกเลิกกลุ่ม<kbd>Ctrl+⇧+G</kbd></button>
         <hr>
-        <button onclick="lock()"><svg><use href="#i-lock"/></svg>ล็อก</button>
+        <button onclick="lock()"><svg><use href="#i-lock"/></svg>ล็อก<kbd>Alt+Shift+L</kbd></button>
       </div>
       <div class="stagein">
         <div class="pagetools" id="pagetools"><div style="margin-left:auto">
@@ -588,7 +601,7 @@ function createFromInputs(){newDoc(toPx(+w.value,unit.value),toPx(+h.value,unit.
 fabric.Object.prototype.set({cornerStyle:'circle',cornerColor:'#fff',cornerStrokeColor:'#be3455',borderColor:'#be3455',transparentCorners:false,cornerSize:12,padding:0});
 const cv=new fabric.Canvas('c',{backgroundColor:'#fff',preserveObjectStacking:true});
 fabric.filterBackend=new fabric.Canvas2dFilterBackend();  // WebGL backend caps images at 2048px; 2d is slower but takes any size
-const PROPS=['pincutId','name','fx','lockMovementX','lockMovementY','lockRotation','lockScalingX','lockScalingY','hasControls'];  // custom/lock state kept in undo + saved designs
+const PROPS=['pincutId','name','fx','upper','lower','lockMovementX','lockMovementY','lockRotation','lockScalingX','lockScalingY','hasControls'];  // custom/lock state kept in undo + saved designs
 const UNTITLED='ดีไซน์ที่ไม่มีชื่อ';
 let docW=1080,docH=1080,zoom=.5,docId=null,docName=UNTITLED,docKind='',docSize='';
 const newId=()=>'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -630,7 +643,8 @@ function placeFloat(){const o=act(),f=$('float');if(!o){f.style.display='none';r
 const isText=o=>o&&o.type==='i-text';
 const SHAPE_T=['rect','circle','triangle','polygon','line','path'],strokeColored=o=>['line','path'].includes(o.type);
 const hex=c=>typeof c==='string'?'#'+new fabric.Color(c||'#000').toHex():'#ffffff';  // gradients have no single hex
-function onSel(){const o=act(),t=isText(o),ty=o?.type;if(ty!=='image')duoSlot=null;if(o)$('op').value=Math.round(o.opacity*100);$('ctxbar').style.display=t?'none':'flex';$('tbar').style.display=t?'flex':'none';if(t)syncTbar();
+function onSel(){const o=act(),t=isText(o),ty=o?.type;if(ty!=='image')duoSlot=null;
+ if(styleClip&&o&&o!==styleClip.src&&ty!=='activeSelection')pasteStyle(o);if(o)$('op').value=Math.round(o.opacity*100);$('ctxbar').style.display=t?'none':'flex';$('tbar').style.display=t?'flex':'none';if(t)syncTbar();
  const show=(c,v)=>document.querySelectorAll('#ctxbar .'+c).forEach(e=>e.style.display=v?'':'none');
  show('imgOnly',ty==='image');show('notImg',ty!=='image');show('multiOnly',ty==='activeSelection');show('groupOnly',ty==='group');show('fillOnly',SHAPE_T.includes(ty));
  onSelColor();
@@ -664,10 +678,11 @@ document.onkeydown=e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagNam
  if(o&&e.key.startsWith('Arrow')){e.preventDefault();const s=e.shiftKey?10:1;  // arrows nudge 1px, Shift = 10px
   o.set({left:o.left+({ArrowLeft:-s,ArrowRight:s}[e.key]||0),top:o.top+({ArrowUp:-s,ArrowDown:s}[e.key]||0)}).setCoords();
   cv.requestRenderAll();placeFloat();clearTimeout(nudgeT);nudgeT=setTimeout(save,400);}
+ if(o&&e.altKey&&e.shiftKey&&e.code==='KeyL'){e.preventDefault();lock();}
  if(!e.ctrlKey&&!e.metaKey)return;const k=e.key.toLowerCase();
  if(k==='g'){e.preventDefault();e.shiftKey?ungroupSel():groupSel();}
  if(k==='a'){e.preventDefault();selectAll();}
- if(k==='d'){e.preventDefault();dup();}if(k==='z')undo();if(k==='y')redo();if(k==='c')copyObj();if(k==='v')pasteObj();};
+ if(k==='d'){e.preventDefault();dup();}if(k==='z')undo();if(k==='y')redo();if(k==='c'){e.preventDefault();e.altKey?copyStyle():copyObj();}if(k==='v'&&!e.altKey)pasteObj();};
 
 /* undo/redo */
 let hist=[],hi=-1,busy=false;
@@ -952,11 +967,27 @@ renderFonts();
 /* text toolbar */
 async function setFont(n){const o=act();if(!isText(o))return;await document.fonts.load(`${o.fontWeight} 40px "${n}"`);o.set('fontFamily',n);cv.requestRenderAll();save();syncTbar();}
 function syncTbar(){const o=act();if(!isText(o))return;$('tFont').value=o.fontFamily;$('tSize').value=Math.round(o.fontSize);$('tColor').style.background=o.fill;
- $('tB').classList.toggle('on',o.fontWeight==='bold');$('tI').classList.toggle('on',o.fontStyle==='italic');$('tU').classList.toggle('on',!!o.underline);
+ $('tB').classList.toggle('on',o.fontWeight==='bold');$('tI').classList.toggle('on',o.fontStyle==='italic');$('tU').classList.toggle('on',!!o.underline);$('tS').classList.toggle('on',!!o.linethrough);$('tCase').classList.toggle('on',!!o.upper);
+ $('tList').classList.toggle('on',o.text.split('\n').every(l=>l.startsWith('• ')));
  $('tAlign').textContent={left:'ชิดซ้าย',center:'กึ่งกลาง',right:'ชิดขวา'}[o.textAlign]||'ชิดซ้าย';}
 $('tFont').onchange=e=>setFont(e.target.value);
 $('tSize').onchange=e=>{const o=act();if(isText(o)){o.set('fontSize',Math.max(6,+e.target.value));cv.requestRenderAll();save();placeFloat();}};
 function stepSize(d){const o=act();if(isText(o)){o.set('fontSize',Math.max(6,o.fontSize+d));cv.requestRenderAll();save();syncTbar();placeFloat();}}
+function toggleCase(){const o=act();if(!isText(o))return;  // uppercase as a toggle: keeps the original so turning it off restores it
+ if(!o.upper)o.set({lower:o.text,text:o.text.toUpperCase(),upper:true});
+ else o.set({text:o.lower&&o.lower.toUpperCase()===o.text?o.lower:o.text.toLowerCase(),upper:false});cv.requestRenderAll();save();syncTbar();placeFloat();}
+function toggleList(){const o=act();if(!isText(o))return;const ls=o.text.split('\n'),on=ls.every(l=>l.startsWith('• '));
+ o.set('text',ls.map(l=>on?l.slice(2):'• '+l).join('\n'));cv.requestRenderAll();save();syncTbar();placeFloat();}
+/* format painter: copy the look of one element, the next element you click gets it */
+const STYLE_T=['fontFamily','fontSize','fontWeight','fontStyle','underline','linethrough','textAlign','charSpacing','lineHeight'],STYLE_A=['fill','stroke','strokeWidth','paintFirst','opacity','rx','ry'];
+let styleClip=null;
+function copyStyle(){const o=act();$('menu').style.display='none';if(!o||o.type==='activeSelection')return toast('เลือกชิ้นงานหนึ่งชิ้นก่อน');
+ styleClip={src:o,text:isText(o),p:Object.fromEntries([...STYLE_T,...STYLE_A].filter(k=>o[k]!==undefined).map(k=>[k,o[k]])),shadow:o.shadow?new fabric.Shadow(o.shadow):null};
+ document.querySelectorAll('.paintBtn').forEach(b=>b.classList.add('on'));toast('คัดลอกรูปแบบแล้ว — คลิกชิ้นงานที่ต้องการวางรูปแบบ',4000);}
+function pasteStyle(o){const c=styleClip;styleClip=null;document.querySelectorAll('.paintBtn').forEach(b=>b.classList.remove('on'));
+ const keys=Object.keys(c.p).filter(k=>STYLE_A.includes(k)?(k!=='rx'&&k!=='ry')||o.type==='rect':isText(o)&&c.text);
+ if(o.type==='image')keys.splice(0,keys.length,...keys.filter(k=>k==='opacity'));
+ keys.forEach(k=>o.set(k,c.p[k]));o.set('shadow',c.shadow?new fabric.Shadow(c.shadow):null);o.dirty=true;cv.requestRenderAll();save();toast('วางรูปแบบแล้ว');}
 function toggleT(k,on,off){const o=act();if(isText(o)){o.set(k,o[k]===on?off:on);cv.requestRenderAll();save();syncTbar();}}
 function cycleAlign(){const o=act();if(isText(o)){const a=['left','center','right'];o.set('textAlign',a[(a.indexOf(o.textAlign)+1)%3]);cv.requestRenderAll();save();syncTbar();}}
 cv.on('text:changed',placeFloat);cv.on('text:editing:exited',save);
@@ -1173,6 +1204,8 @@ function renderFx(){const o=act(),box=$('fxBody');
   rng('rx','มุมโค้ง',0,Math.round(Math.min(o.getScaledWidth(),o.getScaledHeight())/2),Math.round((o.clipPath?.rx||0)*o.scaleX)));
  else if(strokeColored(o))rows.push('<h4>เส้น</h4>',rng('strokeWidth','ความหนา',1,80,Math.round(o.strokeWidth)));
  else if(o.type!=='group')rows.push(`<h4>${isText(o)?'ขอบตัวอักษร':'เส้นขอบ'}</h4>`,col('stroke','สีขอบ',o.stroke||'#0e1318'),rng('strokeWidth','ความหนา',0,isText(o)?20:60,o.stroke?Math.round(o.strokeWidth):0));
+ if(isText(o))rows.push('<h4>ระยะห่าง</h4>',rng('charSpacing','ระยะห่างตัวอักษร',-200,800,Math.round(o.charSpacing||0)),rng('lineHeight','ระยะห่างบรรทัด',50,300,Math.round((o.lineHeight||1.16)*100)),
+  '<h4>ความโปร่งใส</h4>',rng('opacity','ความทึบ',0,100,Math.round(o.opacity*100)));
  if(o.type==='rect')rows.push(rng('rx','มุมโค้ง',0,Math.round(Math.min(o.width,o.height)/2),Math.round(o.rx||0)));
  rows.push('<h4>เงา</h4>',chk('shadow','ใส่เงา',sh));
  if(sh)rows.push(rng('sblur','ความฟุ้ง',0,100,Math.round(sh.blur)),rng('soff','ระยะห่าง',0,100,Math.round(Math.hypot(sh.offsetX,sh.offsetY))),col('scolor','สีเงา',sh.color));
@@ -1184,6 +1217,7 @@ function applyFx(o,k,v){o.dirty=true;
  if(k==='strokeWidth')return strokeColored(o)?o.set('strokeWidth',v):o.set({strokeWidth:v,stroke:v?$('fxBody').querySelector('[data-k=stroke]').value:null,paintFirst:'stroke'});
  if(k==='stroke')return o.set({stroke:v,strokeWidth:o.stroke?o.strokeWidth:Math.max(2,Math.round(Math.min(o.width,o.height)/60)),paintFirst:'stroke'});
  if(k==='duoOn')return applyFx(o,'duo',v?[...DUO]:0);
+ if(k==='charSpacing')return o.set('charSpacing',v);if(k==='lineHeight')return o.set('lineHeight',v/100);if(k==='opacity')return o.set('opacity',v/100);
  if(k==='rx'&&o.type==='image'){const r=v/o.scaleX;return o.set('clipPath',r?new fabric.Rect({width:o.width,height:o.height,rx:r,ry:r,originX:'center',originY:'center'}):null);}  // clipPath is in unscaled image px
  if(k==='rx')return o.set({rx:v,ry:v});
  if(k==='shadow')return o.set('shadow',v?new fabric.Shadow({color:'rgba(0,0,0,0.35)',blur:20,offsetX:8,offsetY:8}):null);
