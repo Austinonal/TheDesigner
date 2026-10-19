@@ -6,6 +6,7 @@
 <title>PinCut</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&family=Prompt:wght@400;700&family=Sarabun:wght@400;700&family=Mitr:wght@400;600&family=Chakra+Petch:wght@400;700&family=Itim&family=Pattaya&family=Charm:wght@400;700&family=Bai+Jamjuree:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-core.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{--acc:#be3455;--acc2:#e2728c;--accSoft:#f8e4ea;--bg:#f2f3f5;--line:#e3e5e9;--txt:#0e1318;--mut:#5e6670;--r:12px}
@@ -33,6 +34,16 @@ svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke
 .cat:hover .circ{transform:translateY(-3px)}.cat svg{width:26px;height:26px}
 .cat .circ.ghost{background:#fff;color:var(--txt);border:1px solid var(--line)}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* phones: canvas on top, panel as a bottom sheet, tool rail as a bottom bar */
+@media (max-width:760px){
+ #editor .body{flex-direction:column}#editor .stage{order:1;flex:1;min-height:0}
+ #editor .panel{order:2;width:100%;max-height:42vh;border-right:0;border-top:1px solid var(--line);box-shadow:0 -6px 20px #0000001a}
+ #editor .rail{order:3;width:100%;flex-direction:row;overflow-x:auto;padding:4px 6px;border-right:0;border-top:1px solid var(--line);justify-content:flex-start}
+ #editor .rail button{flex:none;width:64px}
+ .top{overflow-x:auto}.top button{flex:none;white-space:nowrap}.top .title{display:none}
+ .bottom .l,#zoom{display:none}.stagein{padding:56px 16px 16px}
+ .ctxbar{max-width:calc(100% - 16px);overflow-x:auto}.collapse{display:none!important}
+ .sheet{left:8px;right:8px;width:auto}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 /* recent designs (history) */
 .recent{padding:10px 40px 96px}
@@ -184,6 +195,7 @@ input.f,select.f{font:inherit;padding:10px 12px;font-size:16px;border:1px solid 
 .ord{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ord .btn{justify-content:flex-start;font-weight:400;padding:10px 12px}.ord .btn svg{width:18px;height:18px;color:var(--mut)}
 .ord .btn:disabled,.adv input:disabled{opacity:.5;cursor:default}
 #posArr{display:flex;flex-direction:column;gap:14px}#posArr[hidden]{display:none}
+.nudge{display:grid;grid-template-columns:repeat(4,1fr) 1.4fr;gap:6px;align-items:end}.nudge .btn{justify-content:center;font-size:18px;padding:8px 0}.nudge label{display:flex;flex-direction:column;font-size:12px;gap:4px}.nudge .f{padding:8px}
 .adv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.adv label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500}
 .adv .f{padding:9px 10px;background:var(--bg);border-color:transparent}.adv .btn{height:41px;justify-content:center}
 .stage{flex:1;background:var(--bg);position:relative;overflow:auto}
@@ -417,11 +429,28 @@ input[type=range]{accent-color:var(--acc);width:150px}
           <button class="btn out" onclick="align('r')"><svg><use href="#i-al-r"/></svg>ขวา</button>
           <button class="btn out" onclick="align('b')"><svg><use href="#i-al-b"/></svg>ล่าง</button>
         </div>
+        <label class="toggle">จัดแนวเทียบกับ<select class="f" id="alignTo" style="width:auto"><option value="auto">อัตโนมัติ</option><option value="page">หน้า</option><option value="sel">กลุ่มที่เลือก</option><option value="key">วัตถุหลัก (ชิ้นแรกที่เลือก)</option></select></label>
         <h4>จัดระเบียบ (เลือก 3 ชิ้นขึ้นไป)</h4>
+        <label class="toggle">ระยะห่าง (px, เว้นว่าง = เท่ากันอัตโนมัติ)<input class="f" id="distGap" type="number" min="0" style="width:90px"></label>
         <div class="ord">
           <button class="btn out" onclick="distribute('h')"><svg><use href="#i-al-c"/></svg>เว้นระยะเท่ากัน ↔</button>
           <button class="btn out" onclick="distribute('v')"><svg><use href="#i-al-m"/></svg>เว้นระยะเท่ากัน ↕</button>
         </div>
+        <h4>เรียงอัตโนมัติ</h4>
+        <div class="hint">ชิ้นในกลุ่มเรียงจะขยับตามกันเมื่อข้อความยาวขึ้นหรือปรับขนาด</div>
+        <div class="ord">
+          <button class="btn out" onclick="makeStack('v')">เรียงแนวตั้ง</button>
+          <button class="btn out" onclick="makeStack('h')">เรียงแนวนอน</button>
+        </div>
+        <div id="stackBox" hidden><label class="toggle">ระยะห่างในกลุ่มเรียง<input class="f" id="stackGap" type="number" min="0" style="width:90px"></label>
+          <div class="ord"><button class="btn out" onclick="leaveStack()">เอาชิ้นนี้ออก</button><button class="btn out" onclick="breakStack()">ยกเลิกกลุ่มเรียง</button></div></div>
+        <h4>ขยับทีละระยะ</h4>
+        <div class="nudge"><button class="btn out" onclick="nudge(-1,0)" aria-label="ซ้าย">←</button><button class="btn out" onclick="nudge(0,-1)" aria-label="ขึ้น">↑</button>
+          <button class="btn out" onclick="nudge(0,1)" aria-label="ลง">↓</button><button class="btn out" onclick="nudge(1,0)" aria-label="ขวา">→</button>
+          <label>ทีละ<input class="f" id="nudgeStep" type="number" min="1" value="10"></label></div>
+        <h4>กริดและเส้นไกด์</h4>
+        <label class="toggle">แสดงกริดคอลัมน์<input type="checkbox" id="gridOn"></label>
+        <div class="adv"><label>คอลัมน์<input class="f" id="gridCols" type="number" min="1" max="24"></label><label>ระยะขอบ<input class="f" id="gridMargin" type="number" min="0"></label><label>ช่องว่าง<input class="f" id="gridGutter" type="number" min="0"></label></div>
         <h4>ขั้นสูง</h4>
         <div class="adv">
           <label>ความกว้าง<input class="f" id="pW" type="number" min="1"></label>
@@ -442,12 +471,17 @@ input[type=range]{accent-color:var(--acc);width:150px}
     </aside>
     <aside class="panel" id="panel-pin" hidden>
       <h4>รูปทรงและเส้น</h4>
+      <div class="hint">ทุกทรงปรับโครงสร้างได้ที่ "เอฟเฟกต์" · เลือก 2 ทรงเพื่อรวม/ตัด/ซ้อน · เลือกรูป+ทรงเพื่อใส่รูปในทรง</div>
       <div class="shapes">
         <button onclick="addShape('rect')" aria-label="สี่เหลี่ยม" title="สี่เหลี่ยม"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" fill="#be3455" stroke="none"/></svg></button>
         <button onclick="addShape('round')" aria-label="สี่เหลี่ยมมุมมน" title="สี่เหลี่ยมมุมมน"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="#e2728c" stroke="none"/></svg></button>
         <button onclick="addShape('circle')" aria-label="วงกลม" title="วงกลม"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#a855f7" stroke="none"/></svg></button>
         <button onclick="addShape('tri')" aria-label="สามเหลี่ยม" title="สามเหลี่ยม"><svg viewBox="0 0 24 24"><path d="M12 4l9 16H3z" fill="#0d9488" stroke="none"/></svg></button>
         <button onclick="addShape('star')" aria-label="ดาว" title="ดาว"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" fill="#f5b301" stroke="none"/></svg></button>
+        <button onclick="addShape('poly')" aria-label="หกเหลี่ยม" title="รูปหลายเหลี่ยม"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="#2563eb" stroke="none"/></svg></button>
+        <button onclick="addShape('ring')" aria-label="วงแหวน" title="วงแหวน"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" stroke="#e2728c" stroke-width="4"/></svg></button>
+        <button onclick="addShape('arc')" aria-label="ส่วนโค้ง" title="ส่วนโค้ง/พาย"><svg viewBox="0 0 24 24"><path d="M12 12V4a8 8 0 11-8 8z" fill="#d97706" stroke="none"/></svg></button>
+        <button onclick="addShape('callout')" aria-label="กล่องคำพูด" title="กล่องคำพูด"><svg viewBox="0 0 24 24"><path d="M4 5h16v11h-9l-4 4v-4H4z" fill="#0d9488" stroke="none"/></svg></button>
         <button onclick="addShape('line')" aria-label="เส้น" title="เส้น"><svg viewBox="0 0 24 24"><path d="M3 12h18" stroke-width="2.2"/></svg></button>
         <button onclick="addShape('arrow')" aria-label="ลูกศร" title="ลูกศร"><svg viewBox="0 0 24 24"><path d="M3 12h18M15 6l6 6-6 6" stroke-width="2.2"/></svg></button>
       </div>
@@ -480,6 +514,10 @@ input[type=range]{accent-color:var(--acc);width:150px}
         <button class="imgOnly ib" onclick="openPanel('fx')" title="มุมโค้ง" aria-label="มุมโค้ง"><svg><use href="#i-corner"/></svg></button>
         <button class="fillOnly chipc" id="sFill" onclick="openPanel('bg')" title="สี" aria-label="สี"></button>
         <button class="multiOnly" onclick="groupSel()">จัดกลุ่ม</button>
+        <button class="multiOnly" onclick="imageIntoShape()" title="เลือกรูป + ทรง">ใส่รูปในทรง</button>
+        <button class="multiOnly" onclick="boolOp('unite')" title="รวมทรง">รวม</button>
+        <button class="multiOnly" onclick="boolOp('subtract')" title="ตัดทรงด้านบนออกจากทรงล่างสุด">ตัด</button>
+        <button class="multiOnly" onclick="boolOp('intersect')" title="เก็บเฉพาะส่วนที่ซ้อนกัน">ซ้อน</button>
         <button class="groupOnly" onclick="ungroupSel()">ยกเลิกกลุ่ม</button>
         <span class="sep"></span>
         <button onclick="flip()">พลิก</button>
@@ -609,7 +647,7 @@ function createFromInputs(){newDoc(toPx(+w.value,unit.value),toPx(+h.value,unit.
 fabric.Object.prototype.set({cornerStyle:'circle',cornerColor:'#fff',cornerStrokeColor:'#be3455',borderColor:'#be3455',transparentCorners:false,cornerSize:12,padding:0});
 const cv=new fabric.Canvas('c',{backgroundColor:'#fff',preserveObjectStacking:true});
 fabric.filterBackend=new fabric.Canvas2dFilterBackend();  // WebGL backend caps images at 2048px; 2d is slower but takes any size
-const PROPS=['pincutId','name','fx','crop','upper','lower','lockMovementX','lockMovementY','lockRotation','lockScalingX','lockScalingY','hasControls'];  // custom/lock state kept in undo + saved designs
+const PROPS=['pincutId','name','fx','crop','upper','lower','shape','stack','lockMovementX','lockMovementY','lockRotation','lockScalingX','lockScalingY','hasControls'];  // custom/lock state kept in undo + saved designs
 const UNTITLED='ดีไซน์ที่ไม่มีชื่อ';
 let docW=1080,docH=1080,zoom=.5,docId=null,docName=UNTITLED,docKind='',docSize='',pages=[null],pageIx=0;
 const newId=()=>'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -645,7 +683,7 @@ function delPage(){if(pages.length<2)return toast('ดีไซน์ต้อ�
 function renderPageUI(){$('pageInfo').textContent=`หน้า ${pageIx+1} / ${pages.length}`;const [a,b]=document.querySelectorAll('.pnav button');a.disabled=!pageIx;b.disabled=pageIx>=pages.length-1;}
 function setZoom(z){zoom=z;cv.setZoom(z);cv.setWidth(docW*z);cv.setHeight(docH*z);$('zoom').value=z*100;$('zoomTxt').textContent=Math.round(z*100)+'%';
  $('addpage').style.width=$('pagetools').style.width=docW*z+'px';$('pagetools').style.alignSelf='center';placeFloat();}
-function fit(){const s=$('stage');setZoom(Math.min((s.clientWidth-120)/docW,(s.clientHeight-200)/docH,1));}
+function fit(){const s=$('stage'),nar=s.clientWidth<600;setZoom(Math.max(.05,Math.min((s.clientWidth-(nar?32:120))/docW,(s.clientHeight-(nar?120:200))/docH,1)));}  // narrow screens get thin margins
 $('zoom').oninput=e=>setZoom(e.target.value/100);
 window.onresize=()=>$('editor').classList.contains('on')&&fit();
 function addImage(src,id){fabric.Image.fromURL(src,img=>{img.pincutId=id;const s=Math.min(docW*.6/img.width,docH*.6/img.height,1);
@@ -658,7 +696,7 @@ function placeFloat(){const o=act(),f=$('float');if(!o){f.style.display='none';r
  f.style.display='flex';f.style.left=(c.left-s.left+st.scrollLeft+r.left+r.width/2-f.offsetWidth/2)+'px';
  f.style.top=(c.top-s.top+st.scrollTop+r.top-f.offsetHeight-14)+'px';}
 const isText=o=>o&&o.type==='i-text';
-const SHAPE_T=['rect','circle','triangle','polygon','line','path'],strokeColored=o=>['line','path'].includes(o.type);
+const SHAPE_T=['rect','circle','triangle','polygon','line','path'],strokeColored=o=>o.type==='line'||(o.type==='path'&&(!o.shape||o.shape.k==='line'));  // free-drawn paths and lines are coloured by stroke
 const hex=c=>typeof c==='string'?'#'+new fabric.Color(c||'#000').toHex():'#ffffff';  // gradients have no single hex
 function onSel(){const o=act(),t=isText(o),ty=o?.type;if(ty!=='image')duoSlot=null;
  if(styleClip&&o&&o!==styleClip.src&&ty!=='activeSelection')pasteStyle(o);if(o)$('op').value=Math.round(o.opacity*100);$('ctxbar').style.display=t?'none':'flex';$('tbar').style.display=t?'flex':'none';if(t)syncTbar();
@@ -1032,17 +1070,69 @@ async function exportFile(){cv.discardActiveObject();
 
 /* ===== shapes & lines ===== */
 const ACC='#be3455';
-const starPts=(R,r)=>[...Array(10)].map((_,i)=>{const a=Math.PI/5*i-Math.PI/2,d=i%2?r:R;return {x:R+d*Math.cos(a),y:R+d*Math.sin(a)};});
-const SHAPES={rect:s=>new fabric.Rect({width:s,height:s,fill:ACC}),
- round:s=>new fabric.Rect({width:s,height:s,rx:s*.18,ry:s*.18,fill:'#e2728c'}),
- circle:s=>new fabric.Circle({radius:s/2,fill:'#a855f7'}),
- tri:s=>new fabric.Triangle({width:s,height:s*.87,fill:'#0d9488'}),
- star:s=>new fabric.Polygon(starPts(s/2,s/4.6),{fill:'#f5b301'}),
- line:s=>new fabric.Line([0,0,s*1.4,0],{stroke:'#0e1318',strokeWidth:Math.max(2,s/40)}),
- arrow:s=>new fabric.Path(`M0 ${s*.1} L${s*1.4} ${s*.1} M${s*1.22} 0 L${s*1.4} ${s*.1} L${s*1.22} ${s*.2}`,
-  {fill:'',stroke:'#0e1318',strokeWidth:Math.max(2,s/40),strokeLineCap:'round',strokeLineJoin:'round'})};
-function addShape(k){const o=SHAPES[k](Math.min(docW,docH)*.3);o.set({left:(docW-o.getScaledWidth())/2,top:(docH-o.getScaledHeight())/2});cv.add(o).setActiveObject(o);save();}
+/* parametric shapes: a fabric.Path whose outline is rebuilt from o.shape {k,w,h,...}; every kind keeps its own knobs */
+const SHAPE_NAME={rect:'สี่เหลี่ยม',ellipse:'วงรี',poly:'รูปหลายเหลี่ยม',star:'ดาว',callout:'กล่องคำพูด',line:'เส้น'};
+const P2=(pts)=>'M'+pts.map(p=>p[0].toFixed(2)+' '+p[1].toFixed(2)).join(' L')+' Z';
+function ellipsePts(cx,cy,rx,ry,a0,a1,n){const out=[];for(let i=0;i<=n;i++){const a=(a0+(a1-a0)*i/n-90)*Math.PI/180;out.push([cx+rx*Math.cos(a),cy+ry*Math.sin(a)]);}return out;}
+function roundRectPts(x,y,w,h,r){r=r.map(v=>Math.max(0,Math.min(v,w/2,h/2)));const out=[],q=(cx,cy,rad,a0)=>{for(let i=0;i<=8;i++){const a=(a0+90*i/8)*Math.PI/180;out.push([cx+rad*Math.cos(a),cy+rad*Math.sin(a)]);}};
+ q(x+r[0],y+r[0],r[0],180);q(x+w-r[1],y+r[1],r[1],270);q(x+w-r[2],y+h-r[2],r[2],0);q(x+r[3],y+h-r[3],r[3],90);return out;}
+function densify(pts,step){const out=[];pts.forEach((p,i)=>{const q=pts[(i+1)%pts.length],n=Math.max(1,Math.ceil(Math.hypot(q[0]-p[0],q[1]-p[1])/step));
+ for(let j=0;j<n;j++)out.push([p[0]+(q[0]-p[0])*j/n,p[1]+(q[1]-p[1])*j/n]);});return out;}  // straight edges need points so the tail can attach anywhere
+function shapePath(s){const {k,w,h}=s;
+ if(k==='rect')return P2(roundRectPts(0,0,w,h,s.r));
+ if(k==='poly')return P2([...Array(s.sides)].map((_,i)=>{const a=(i*360/s.sides-90)*Math.PI/180;return [w/2+w/2*Math.cos(a),h/2+h/2*Math.sin(a)];}));
+ if(k==='star')return P2([...Array(s.points*2)].map((_,i)=>{const a=(i*180/s.points-90)*Math.PI/180,f=i%2?1-s.depth/100:1;return [w/2+w/2*f*Math.cos(a),h/2+h/2*f*Math.sin(a)];}));
+ if(k==='ellipse'){const full=s.end-s.start>=360,o=ellipsePts(w/2,h/2,w/2,h/2,s.start,full?s.start+360:s.end,96),ir=s.ring/100;
+  if(!ir)return P2(full?o:[[w/2,h/2],...o]);const inner=ellipsePts(w/2,h/2,w/2*ir,h/2*ir,s.start,full?s.start+360:s.end,96).reverse();
+  return full?P2(o)+' '+P2(inner):P2([...o,...inner]);}
+ if(k==='callout'){const L=.22,side=s.side,vert=side==='top'||side==='bottom',T=(vert?h:w)*L;  // body leaves room for the tail on one side
+  const bx=side==='left'?T:0,by=side==='top'?T:0,bw=vert?w:w-T,bh=vert?h-T:h,m=Math.min(bw,bh);
+  let body=s.style==='oval'?ellipsePts(bx+bw/2,by+bh/2,bw/2,bh/2,0,360,96).slice(0,-1):roundRectPts(bx,by,bw,bh,Array(4).fill(s.style==='round'?m*.18:0));body=densify(body,Math.max(2,Math.min(bw,bh)/40));
+  const f=s.tail/100,half=(vert?bw:bh)*.08,base=vert?[[bx+bw*f-half,side==='top'?by:by+bh],[bx+bw*f+half,side==='top'?by:by+bh]]:[[side==='left'?bx:bx+bw,by+bh*f-half],[side==='left'?bx:bx+bw,by+bh*f+half]];
+  const tip=vert?[bx+bw*f-half*1.5,side==='top'?0:h]:[side==='left'?0:w,by+bh*f+half*1.5],near=pt=>body.reduce((bi,p,i)=>Math.hypot(p[0]-pt[0],p[1]-pt[1])<Math.hypot(body[bi][0]-pt[0],body[bi][1]-pt[1])?i:bi,0);
+  let i1=near(base[0]),i2=near(base[1]);const n=body.length;if((i1-i2+n)%n<n/2)[i1,i2]=[i2,i1];  // walk i2→i1 the long way round; the short arc between the base points becomes the tail
+  const out=[];for(let i=0;i<n;i++){out.push(body[(i2+i)%n]);if((i2+i)%n===i1){out.push(tip);break;}}return P2(out);}
+ if(k==='line'){const y=h/2,a=Math.min(h/2,Math.max(10,w*.06)),head=(x,dir,t)=>t==='arrow'?` M${x-dir*a} ${y-a*.7} L${x} ${y} L${x-dir*a} ${y+a*.7}`:t==='bar'?` M${x} ${y-a*.7} L${x} ${y+a*.7}`:'';
+  return `M0 ${y} L${w} ${y}`+head(0,-1,s.headS)+head(w,1,s.headE);}}
+const SHAPE_DEF={rect:{k:'rect',r:[0,0,0,0]},round:{k:'rect',r:[.18,.18,.18,.18]},circle:{k:'ellipse',start:0,end:360,ring:0},ring:{k:'ellipse',start:0,end:360,ring:55},
+ arc:{k:'ellipse',start:0,end:270,ring:0},tri:{k:'poly',sides:3},poly:{k:'poly',sides:6},star:{k:'star',points:5,depth:55},callout:{k:'callout',style:'round',side:'bottom',tail:25},
+ line:{k:'line',headS:'none',headE:'none'},arrow:{k:'line',headS:'none',headE:'arrow'}};
+const SHAPE_FILL={rect:ACC,round:'#e2728c',circle:'#a855f7',ring:'#e2728c',arc:'#d97706',tri:'#0d9488',poly:'#2563eb',star:'#f5b301',callout:'#0d9488'};
+function makeShape(sh,style){const o=new fabric.Path(shapePath(sh),{fillRule:'evenodd',strokeLineJoin:'round',strokeLineCap:'round',objectCaching:false,...style});o.shape=sh;return o;}
+function rebuildShape(o){const c=o.getCenterPoint();o._setPath(shapePath(o.shape));o.setPositionByOrigin(c,'center','center');o.setCoords();o.dirty=true;}
+function addShape(k){const s=Math.min(docW,docH)*.3,d=JSON.parse(JSON.stringify(SHAPE_DEF[k])),line=d.k==='line';
+ Object.assign(d,{w:line?s*1.4:s,h:line?Math.max(20,s*.12):d.k==='callout'?s*.8:s});if(d.r)d.r=d.r.map(v=>v*s);
+ const o=makeShape(d,line?{fill:'',stroke:'#0e1318',strokeWidth:Math.max(2,s/40)}:{fill:SHAPE_FILL[k]});
+ o.set({left:(docW-o.width)/2,top:(docH-o.height)/2});cv.add(o).setActiveObject(o);save();}
+// resizing a parametric shape bakes the scale into its own size, so corners and tails never stretch
+cv.on('object:modified',e=>{const o=e.target;if(!o?.shape||(o.scaleX===1&&o.scaleY===1))return;
+ o.shape.w*=Math.abs(o.scaleX);o.shape.h*=Math.abs(o.scaleY);o.set({scaleX:1,scaleY:1});rebuildShape(o);cv.requestRenderAll();save();});
 
+/* image inside a shape: the shape becomes the image's clip path, in the image's own coordinates so they move together */
+function imageIntoShape(){const objs=cv.getActiveObjects(),img=objs.find(o=>o.type==='image'),sh=objs.find(o=>o!==img&&!isText(o)&&o.type!=='image');
+ if(objs.length!==2||!img||!sh)return toast('เลือกรูป 1 รูปกับทรง 1 ชิ้น');cv.discardActiveObject();
+ const r=sh.getBoundingRect(true,true),sc=Math.max(r.width/img.width,r.height/img.height);
+ img.set({scaleX:sc,scaleY:sc,angle:0,flipX:false,flipY:false,clipPath:null});img.setPositionByOrigin(sh.getCenterPoint(),'center','center');img.setCoords();
+ sh.clone(c=>{const d=fabric.util.qrDecompose(fabric.util.multiplyTransformMatrices(fabric.util.invertTransform(img.calcTransformMatrix()),sh.calcTransformMatrix()));
+  c.set({left:d.translateX,top:d.translateY,angle:d.angle,scaleX:d.scaleX,scaleY:d.scaleY,skewX:d.skewX,skewY:d.skewY,originX:'center',originY:'center',flipX:false,flipY:false,shadow:null,stroke:null});
+  img.clipPath=c;img.dirty=true;cv.remove(sh);cv.setActiveObject(img);cv.requestRenderAll();save();toast('ใส่รูปในทรงแล้ว');},['shape']);}
+
+/* union / subtract / intersect with paper.js (fabric has no path booleans) */
+let paperReady=false;
+function boolOp(op){if(!window.paper)return toast('ยังโหลดตัวคำนวณรูปทรงไม่เสร็จ ลองใหม่อีกครั้ง');
+ const objs=cv.getActiveObjects().filter(o=>!isText(o)&&o.type!=='image'&&o.type!=='group'&&!strokeColored(o));
+ if(objs.length<2)return toast('เลือกรูปทรงที่มีพื้น 2 ชิ้นขึ้นไป');
+ if(!paperReady){paper.setup(new paper.Size(1,1));paperReady=true;}
+ const order=cv.getObjects(),sorted=objs.slice().sort((a,b)=>order.indexOf(a)-order.indexOf(b));  // bottom-most is the base for subtract
+ const toPaper=o=>{const g=paper.project.importSVG(`<svg xmlns="http://www.w3.org/2000/svg">${o.toSVG()}</svg>`,{expandShapes:true,insert:true});
+  const ps=g.getItems({class:paper.PathItem}).map(p=>{const q=p.clone({insert:false});q.transform(p.parent.globalMatrix);return q;});g.remove();
+  return ps.reduce((a,b)=>a.unite(b));};
+ const items=sorted.map(toPaper);let res=items[0];
+ for(const it of items.slice(1))res=op==='unite'?res.unite(it):op==='subtract'?res.subtract(it):res.intersect(it);
+ const d=res.pathData;paper.project.clear();if(!d)return toast('ไม่มีส่วนที่ซ้อนกัน');
+ const base=sorted[0],o=new fabric.Path(d,{fill:base.fill,stroke:base.stroke,strokeWidth:base.strokeWidth,shadow:base.shadow,opacity:base.opacity,fillRule:'evenodd'});
+ const at=order.indexOf(base);cv.discardActiveObject();objs.forEach(x=>cv.remove(x));cv.insertAt(o,at);cv.setActiveObject(o);cv.requestRenderAll();save();
+ toast({unite:'รวมทรงแล้ว',subtract:'ตัดทรงแล้ว',intersect:'เก็บเฉพาะส่วนที่ซ้อนแล้ว'}[op]);}
 /* ===== page background & pen ===== */
 const SWATCH=['#000000','#545454','#737373','#a6a6a6','#d9d9d9','#ffffff','#be3455','#ff3131','#ff66c4','#e2a9f1','#cb6ce6','#8c52ff',
  '#0097b2','#0cc0df','#5ce1e6','#38b6ff','#5271ff','#004aad','#00bf63','#7ed957','#c1ff72','#ffde59','#ffbd59','#ff914d'];
@@ -1088,7 +1178,7 @@ function renderPos(){if(openP!=='pos')return;
  document.querySelectorAll('#panel-pos .tabs2 button').forEach(b=>{b.classList.toggle('on',b.dataset.t===posTab);b.setAttribute('aria-selected',b.dataset.t===posTab);});
  $('posArr').hidden=posTab!=='arr';$('posLyr').hidden=posTab!=='lyr';if(posTab==='lyr')return renderLayers();
  const o=act(),r=o?.getBoundingRect(true,true),ids=['pW','pH','pX','pY','pR'];
- ids.forEach(id=>$(id).disabled=!o);document.querySelectorAll('#posArr .btn').forEach(b=>b.disabled=!o);
+ ids.forEach(id=>$(id).disabled=!o);syncGrid();$('stackBox').hidden=!o?.stack;if(o?.stack)$('stackGap').value=o.stack.gap;document.querySelectorAll('#posArr .btn').forEach(b=>b.disabled=!o);
  if(!o){ids.forEach(id=>$(id).value='');$(ids[0]).placeholder='--';return;}
  $('pW').value=Math.round(o.getScaledWidth());$('pH').value=Math.round(o.getScaledHeight());$('pX').value=Math.round(r.left);$('pY').value=Math.round(r.top);$('pR').value=Math.round(o.angle||0);}
 $('pLock').onclick=e=>{const b=e.currentTarget,on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);b.innerHTML=`<svg><use href="#i-${on?'lock':'unlock'}"/></svg>`;};
@@ -1153,8 +1243,9 @@ async function renderTemplates(){const cards=await Promise.all(TEMPLATES.map(asy
 renderTemplates();
 
 /* ===== layers ===== */
+const lnameShape=o=>o.shape?SHAPE_NAME[o.shape.k]:null;
 const LNAME={'i-text':'ข้อความ',image:'รูปภาพ',rect:'สี่เหลี่ยม',circle:'วงกลม',triangle:'สามเหลี่ยม',polygon:'ดาว',line:'เส้น',path:'เส้นวาด',group:'กลุ่ม'};
-const lname=o=>o.name||(o.type==='i-text'?o.text.split('\n')[0].slice(0,30):LNAME[o.type]||o.type);
+const lname=o=>o.name||lnameShape(o)||(o.type==='i-text'?o.text.split('\n')[0].slice(0,30):LNAME[o.type]||o.type);
 function renderLayers(){if(openP!=='pos'||posTab!=='lyr')return;const box=$('layers'),objs=cv.getObjects().slice().reverse(),sel=cv.getActiveObjects();
  box.innerHTML=objs.length?'':'<div class="empty">ยังไม่มีองค์ประกอบบนหน้านี้</div>';
  objs.forEach(o=>{const r=document.createElement('div'),n=lname(o);r.className='lyr'+(sel.includes(o)?' on':'')+(o.visible?'':' hid');
@@ -1178,15 +1269,41 @@ function renderLayers(){if(openP!=='pos'||posTab!=='lyr')return;const box=$('lay
 
 /* ===== align, group, select all, right-click ===== */
 function align(d){const objs=cv.getActiveObjects();if(!objs.length)return;const multi=objs.length>1;cv.discardActiveObject();
- const rs=objs.map(o=>o.getBoundingRect(true,true)),L=multi?Math.min(...rs.map(r=>r.left)):0,T=multi?Math.min(...rs.map(r=>r.top)):0,
-  R=multi?Math.max(...rs.map(r=>r.left+r.width)):docW,B=multi?Math.max(...rs.map(r=>r.top+r.height)):docH;
- objs.forEach((o,i)=>{const r=rs[i];
+ const mode=$('alignTo').value,rs=objs.map(o=>o.getBoundingRect(true,true));let L=0,T=0,R=docW,B=docH;
+ if(multi&&mode!=='page'){const ref=mode==='key'?[rs[0]]:rs;L=Math.min(...ref.map(r=>r.left));T=Math.min(...ref.map(r=>r.top));R=Math.max(...ref.map(r=>r.left+r.width));B=Math.max(...ref.map(r=>r.top+r.height));}
+ objs.forEach((o,i)=>{if(mode==='key'&&multi&&!i)return;const r=rs[i];
   o.set({left:o.left+({l:L-r.left,c:(L+R-r.width)/2-r.left,r:R-r.width-r.left}[d]||0),top:o.top+({t:T-r.top,m:(T+B-r.height)/2-r.top,b:B-r.height-r.top}[d]||0)}).setCoords();});
  cv.setActiveObject(multi?new fabric.ActiveSelection(objs,{canvas:cv}):objs[0]);cv.requestRenderAll();save();onSel();}
+function nudge(dx,dy){const o=act();if(!o)return;const s=Math.max(1,+$('nudgeStep').value||1);o.set({left:o.left+dx*s,top:o.top+dy*s}).setCoords();cv.requestRenderAll();placeFloat();save();renderPos();}
+/* auto-layout stacks: members keep order and gap; text growth or resizing pushes the next ones along */
+const stackOf=id=>cv.getObjects().filter(o=>o.stack?.id===id).sort((a,b)=>a.stack.i-b.stack.i);
+function reflow(id){const ms=stackOf(id);if(!ms.length)return;const {axis,gap}=ms[0].stack,[p,s]=axis==='v'?['top','height']:['left','width'];
+ let at=ms[0].getBoundingRect(true,true)[p];ms.forEach(o=>{const r=o.getBoundingRect(true,true);o.set(p,o[p]+at-r[p]).setCoords();at+=r[s]+gap;});cv.requestRenderAll();}
+function makeStack(axis){const objs=cv.getActiveObjects();if(objs.length<2)return toast('เลือกอย่างน้อย 2 ชิ้นเพื่อเรียงอัตโนมัติ');const p=axis==='v'?'top':'left',s=axis==='v'?'height':'width';
+ cv.discardActiveObject();const it=objs.map(o=>({o,r:o.getBoundingRect(true,true)})).sort((a,b)=>a.r[p]-b.r[p]);
+ const gaps=it.slice(1).map((x,i)=>x.r[p]-it[i].r[p]-it[i].r[s]),gap=Math.max(0,Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length));
+ const id=newId();it.forEach((x,i)=>x.o.stack={id,axis,gap,i});reflow(id);cv.setActiveObject(new fabric.ActiveSelection(objs,{canvas:cv}));cv.requestRenderAll();save();toast(`เรียงอัตโนมัติแล้ว ระยะ ${gap} px`);}
+function leaveStack(){const o=act();if(!o?.stack)return;const id=o.stack.id;o.stack=undefined;stackOf(id).forEach((m,i)=>m.stack.i=i);reflow(id);save();renderPos();}
+function breakStack(){const o=act(),id=o?.stack?.id||cv.getActiveObjects().find(x=>x.stack)?.stack.id;if(!id)return;stackOf(id).forEach(m=>m.stack=undefined);save();renderPos();toast('ยกเลิกกลุ่มเรียงแล้ว');}
+cv.on('text:changed',e=>{if(e.target?.stack)reflow(e.target.stack.id);});
+cv.on('object:modified',e=>{const o=e.target;if(!o?.stack)return;const ms=stackOf(o.stack.id),p=o.stack.axis==='v'?'top':'left';
+ if(e.action==='drag'){ms.sort((a,b)=>a.getBoundingRect(true,true)[p]-b.getBoundingRect(true,true)[p]).forEach((m,i)=>m.stack.i=i);}  // dragging reorders
+ reflow(o.stack.id);save();});
+$('stackGap').onchange=e=>{const o=act(),id=o?.stack?.id;if(!id)return;stackOf(id).forEach(m=>m.stack.gap=Math.max(0,+e.target.value||0));reflow(id);save();};
+/* layout grid: columns with margin and gutter, drawn on the live canvas only and used as snap targets */
+const grid={on:false,cols:6,margin:40,gutter:20};try{Object.assign(grid,JSON.parse(localStorage.getItem('pincut.grid'))||{});}catch{}
+const gridCols=()=>{if(!grid.on)return [];const cw=(docW-2*grid.margin-(grid.cols-1)*grid.gutter)/grid.cols;return [...Array(grid.cols)].map((_,i)=>[grid.margin+i*(cw+grid.gutter),grid.margin+i*(cw+grid.gutter)+cw]);};
+function syncGrid(){$('gridOn').checked=grid.on;$('gridCols').value=grid.cols;$('gridMargin').value=grid.margin;$('gridGutter').value=grid.gutter;}
+['gridOn','gridCols','gridMargin','gridGutter'].forEach(id=>$(id).onchange=()=>{grid.on=$('gridOn').checked;grid.cols=Math.min(24,Math.max(1,+$('gridCols').value||1));
+ grid.margin=Math.max(0,+$('gridMargin').value||0);grid.gutter=Math.max(0,+$('gridGutter').value||0);try{localStorage.setItem('pincut.grid',JSON.stringify(grid));}catch{}syncGrid();cv.requestRenderAll();});
+/* Alt+click picks the next element underneath, for things hidden behind others */
+cv.on('mouse:down',e=>{if(!e.e.altKey)return;const pt=cv.getPointer(e.e,true),cur=act();
+ const under=cv.getObjects().filter(o=>o.visible&&o.containsPoint(pt)).reverse();if(under.length<2)return;
+ const next=under[(under.indexOf(cur)+1)%under.length];cv.setActiveObject(next);cv.requestRenderAll();});
 function distribute(ax){const objs=cv.getActiveObjects();if(objs.length<3)return toast('เลือกอย่างน้อย 3 ชิ้นเพื่อเว้นระยะเท่ากัน');
  const [p,s]=ax==='h'?['left','width']:['top','height'];cv.discardActiveObject();
  const it=objs.map(o=>({o,r:o.getBoundingRect(true,true)})).sort((a,b)=>a.r[p]-b.r[p]),first=it[0].r,last=it.at(-1).r;
- const gap=(last[p]+last[s]-first[p]-it.reduce((n,x)=>n+x.r[s],0))/(it.length-1);let at=first[p];
+ const fixed=$('distGap').value!==''&&+$('distGap').value>=0,gap=fixed?+$('distGap').value:(last[p]+last[s]-first[p]-it.reduce((n,x)=>n+x.r[s],0))/(it.length-1);let at=first[p];
  it.forEach(({o,r})=>{o.set(p,o[p]+at-r[p]).setCoords();at+=r[s]+gap;});
  cv.setActiveObject(new fabric.ActiveSelection(objs,{canvas:cv}));cv.requestRenderAll();save();toast(`เว้นระยะเท่ากัน ${Math.round(gap)} px`);}
 function groupSel(){const o=act();if(o?.type!=='activeSelection')return;o.toGroup();cv.requestRenderAll();save();onSel();}
@@ -1202,7 +1319,7 @@ cv.upperCanvasEl.addEventListener('contextmenu',e=>{e.preventDefault();const t=c
 let guides=[];
 cv.on('object:moving',e=>{const o=e.target,t=8/zoom;o.setCoords();const r=o.getBoundingRect(true,true);guides=[];
  const others=cv.getObjects().filter(x=>x!==o&&x.visible&&!(o.getObjects?.().includes(x))).map(x=>x.getBoundingRect(true,true));
- const tx=[0,docW/2,docW,...others.flatMap(b=>[b.left,b.left+b.width/2,b.left+b.width])],ty=[0,docH/2,docH,...others.flatMap(b=>[b.top,b.top+b.height/2,b.top+b.height])];
+ const gx=gridCols().flat(),tx=[0,docW/2,docW,...gx,...(grid.on?[docW-grid.margin]:[]),...others.flatMap(b=>[b.left,b.left+b.width/2,b.left+b.width])],ty=[0,docH/2,docH,...(grid.on?[grid.margin,docH-grid.margin]:[]),...others.flatMap(b=>[b.top,b.top+b.height/2,b.top+b.height])];
  const snap=(pts,targets,key)=>{for(const p of pts)for(const q of targets)if(Math.abs(p-q)<t){o.set(key,o[key]+q-p);guides.push(key==='left'?{x:q}:{y:q});return;}};
  snap([r.left,r.left+r.width/2,r.left+r.width],tx,'left');snap([r.top,r.top+r.height/2,r.top+r.height],ty,'top');o.setCoords();
  measure(o,others,t);});
@@ -1225,6 +1342,10 @@ function drawMeasures(c,v){c.save();c.font='600 11px Kanit, sans-serif';c.textAl
   const txt=(q.eq?'= ':'')+Math.round(q.g),w=c.measureText(txt).width+10,mx=(x1+x2)/2,my=(y1+y2)/2;
   c.beginPath();c.roundRect?c.roundRect(mx-w/2,my-9,w,18,9):c.rect(mx-w/2,my-9,w,18);c.fill();c.fillStyle='#fff';c.fillText(txt,mx,my+.5);}
  c.restore();}
+cv.on('after:render',e=>{if(!grid.on||e.ctx!==cv.contextContainer)return;const c=e.ctx,v=cv.viewportTransform,P=x=>x*v[0]+v[4],Q=y=>y*v[3]+v[5];
+ c.save();c.fillStyle='rgba(190,52,85,0.07)';c.strokeStyle='rgba(190,52,85,0.35)';c.lineWidth=1;
+ gridCols().forEach(([a,b])=>{c.fillRect(P(a),Q(grid.margin),P(b)-P(a),Q(docH-grid.margin)-Q(grid.margin));});
+ c.setLineDash([3,3]);c.strokeRect(P(grid.margin),Q(grid.margin),P(docW-grid.margin)-P(grid.margin),Q(docH-grid.margin)-Q(grid.margin));c.restore();});
 cv.on('after:render',e=>{if((!guides.length&&!measures.length)||e.ctx!==cv.contextContainer)return;const c=e.ctx,v=cv.viewportTransform;  // only the live canvas, never exports
  c.save();c.strokeStyle=ACC;c.lineWidth=1;c.setLineDash([4,4]);c.beginPath();
  guides.forEach(g=>{if(g.x!=null){const X=g.x*v[0]+v[4];c.moveTo(X,0);c.lineTo(X,cv.height);}else{const Y=g.y*v[3]+v[5];c.moveTo(0,Y);c.lineTo(cv.width,Y);}});
@@ -1242,11 +1363,20 @@ const FILT={duo:v=>new fabric.Image.filters.Duotone({dark:v[0],light:v[1]}),brig
  saturation:v=>new fabric.Image.filters.Saturation({saturation:v/100}),blur:v=>new fabric.Image.filters.Blur({blur:v/100}),gray:()=>new fabric.Image.filters.Grayscale()};
 const dashOf=o=>!o.strokeDashArray?'solid':o.strokeDashArray[0]>o.strokeWidth*1.5?'dash':'dot';
 const dash=o=>`<label class="toggle">รูปแบบเส้น<select class="f" data-k="dash" style="width:auto">${[['solid','เส้นทึบ'],['dash','เส้นประ'],['dot','จุด']].map(([v,l])=>`<option value="${v}" ${dashOf(o)===v?'selected':''}>${l}</option>`).join('')}</select></label>`;
+function shapeRows(o,rng){const s=o.shape,sel=(k,l,opts)=>`<label class="toggle">${l}<select class="f" data-k="sh.${k}" style="width:auto">${opts.map(([v,t])=>`<option value="${v}" ${s[k]===v?'selected':''}>${t}</option>`).join('')}</select></label>`;
+ const m=Math.round(Math.min(s.w,s.h)/2),rows=[`<h4>${SHAPE_NAME[s.k]} — ปรับโครงสร้าง</h4>`];
+ if(s.k==='rect')rows.push(rng('sh.rall','ทุกมุม',0,m,Math.round(Math.max(...s.r))),...['บนซ้าย','บนขวา','ล่างขวา','ล่างซ้าย'].map((l,i)=>rng('sh.r'+i,l,0,m,Math.round(s.r[i]))));
+ if(s.k==='ellipse')rows.push(rng('sh.start','เริ่มที่องศา',0,359,s.start),rng('sh.end','จบที่องศา',1,360,s.end),rng('sh.ring','รูตรงกลาง (วงแหวน %)',0,95,s.ring));
+ if(s.k==='poly')rows.push(rng('sh.sides','จำนวนด้าน',3,12,s.sides));
+ if(s.k==='star')rows.push(rng('sh.points','จำนวนแฉก',3,20,s.points),rng('sh.depth','ความลึกของแฉก',5,95,s.depth));
+ if(s.k==='callout')rows.push(sel('style','รูปแบบ',[['rect','เหลี่ยม'],['round','มุมมน'],['oval','วงรี']]),sel('side','ด้านของหาง',[['bottom','ล่าง'],['top','บน'],['left','ซ้าย'],['right','ขวา']]),rng('sh.tail','ตำแหน่งหาง %',10,90,s.tail));
+ if(s.k==='line'){const H=[['none','ไม่มี'],['arrow','ลูกศร'],['bar','ขีด']];rows.push(sel('headS','หัวเส้น (ต้น)',H),sel('headE','หัวเส้น (ปลาย)',H));}
+ return rows;}
 function renderFx(){const o=act(),box=$('fxBody');
  if(!o||o.type==='activeSelection'){box.innerHTML='<h4>เอฟเฟกต์</h4><div class="empty">เลือกองค์ประกอบหนึ่งชิ้นบนผืนงานก่อน</div>';return;}
  const rng=(k,l,min,max,v)=>`<label class="fxr"><span>${l}<output>${v}</output></span><input type="range" data-k="${k}" min="${min}" max="${max}" value="${v}"></label>`;
  const chk=(k,l,on)=>`<label class="toggle">${l}<input type="checkbox" data-k="${k}" ${on?'checked':''}></label>`,col=(k,l,v)=>`<label class="toggle">${l}<input type="color" data-k="${k}" value="${hex(v)}"></label>`;
- const f=o.fx||{},sh=o.shadow,rows=[];
+ const f=o.fx||{},sh=o.shadow,rows=o.shape?shapeRows(o,rng):[];
  if(o.type==='image')rows.push('<h4>ปรับแต่งรูป</h4>',rng('brightness','ความสว่าง',-100,100,f.brightness||0),rng('contrast','คอนทราสต์',-100,100,f.contrast||0),
   rng('saturation','ความอิ่มสี',-100,100,f.saturation||0),rng('blur','เบลอ',0,100,f.blur||0),chk('gray','ขาวดำ',f.gray),chk('duoOn','ภาพสองสี (Duotone)',f.duo),
   '<button class="btn out" data-k="reset">ล้างการปรับแต่งรูป</button>','<h4>เส้นขอบรูป</h4>',col('stroke','สีขอบ',o.stroke||'#ffffff'),
@@ -1273,6 +1403,8 @@ function applyFx(o,k,v){o.dirty=true;
  if(k.startsWith('crop')&&o.type==='image'){const c=[...(o.crop||[0,0,0,0])];c[+k[4]]=v;const {width:W,height:H}=o.getOriginalSize(),ox=o.cropX,oy=o.cropY;
   o.set({crop:c,cropX:W*c[0]/100,cropY:H*c[1]/100,width:W*(1-(c[0]+c[2])/100),height:H*(1-(c[1]+c[3])/100)});
   return o.set({left:o.left+(o.cropX-ox)*o.scaleX,top:o.top+(o.cropY-oy)*o.scaleY});}  // shortcut: keeps position only for unrotated images
+ if(k.startsWith('sh.')&&o.shape){const n=k.slice(3),s=o.shape;if(n==='rall')s.r=s.r.map(()=>v);else if(/^r\d$/.test(n))s.r[+n[1]]=v;
+  else s[n]=typeof s[n]==='number'?v:String(v);if(s.k==='ellipse'&&s.end<=s.start)s.end=Math.min(360,s.start+1);rebuildShape(o);return;}
  if(k==='charSpacing')return o.set('charSpacing',v);if(k==='lineHeight')return o.set('lineHeight',v/100);if(k==='opacity')return o.set('opacity',v/100);
  if(k==='rx'&&o.type==='image'){const r=v/o.scaleX;return o.set('clipPath',r?new fabric.Rect({width:o.width,height:o.height,rx:r,ry:r,originX:'center',originY:'center'}):null);}  // clipPath is in unscaled image px
  if(k==='rx')return o.set({rx:v,ry:v});
@@ -1282,7 +1414,7 @@ function applyFx(o,k,v){o.dirty=true;
 const fxVal=el=>el.type==='checkbox'?el.checked:el.type==='range'?+el.value:el.value;
 $('fxBody').oninput=e=>{const el=e.target,k=el.dataset.k,o=act();if(!k||!o)return;applyFx(o,k,fxVal(el));
  const out=el.closest('.fxr')?.querySelector('output');if(out)out.textContent=el.value;cv.requestRenderAll();};
-$('fxBody').onchange=e=>{const k=e.target.dataset.k;if(!k||!act())return;save();if(['shadow','stroke','strokeWidth','duoOn'].includes(k)){renderFx();onSelColor();}};
+$('fxBody').onchange=e=>{const k=e.target.dataset.k;if(!k||!act())return;save();if(k==='sh.rall'||k==='sh.start')renderFx();if(['shadow','stroke','strokeWidth','duoOn'].includes(k)){renderFx();onSelColor();}};
 $('fxBody').onclick=e=>{const o=act();if(e.target.dataset.k==='asbg'&&o?.type==='image'){o.clone(c=>{const sc=Math.max(docW/c.width,docH/c.height);
   c.set({scaleX:sc,scaleY:sc,left:(docW-c.width*sc)/2,top:(docH-c.height*sc)/2,angle:0,originX:'left',originY:'top',clipPath:null,stroke:null,shadow:null});
   cv.remove(o);cv.discardActiveObject();cv.setBackgroundImage(c,()=>{cv.requestRenderAll();save();toast('ตั้งเป็นพื้นหลังแล้ว — ลบได้ที่แผงสี',4000);});});return;}
