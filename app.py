@@ -177,7 +177,7 @@ class Api:
 
     # ----- export -----
     def save_export(self, data, ext, name="design"):
-        ext = {"png": "png", "jpg": "jpg", "pdf": "pdf"}[ext]
+        ext = {"png": "png", "jpg": "jpg", "pdf": "pdf", "svg": "svg", "json": "json"}[ext]
         path = save_dialog(core.export_name(name, ext))
         if path:
             Path(path).write_bytes(core.from_data_url(data))
