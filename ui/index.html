@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root{--acc:#ef5a4c;--acc2:#ff9f5a;--accSoft:#fdebe8;--bg:#f2f3f5;--line:#e3e5e9;--txt:#0e1318;--mut:#5e6670;--r:12px}
+:root{--acc:#be3455;--acc2:#e2728c;--accSoft:#f8e4ea;--bg:#f2f3f5;--line:#e3e5e9;--txt:#0e1318;--mut:#5e6670;--r:12px}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
 body{font-family:Kanit,sans-serif;font-weight:400;font-size:15px;-webkit-font-smoothing:antialiased;color:var(--txt);background:#fff;overflow:hidden}
 button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
@@ -22,9 +22,9 @@ svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke
 .rail button.on{color:var(--txt)}.rail button.on .ico{background:var(--accSoft);color:var(--acc)}
 .rail .create .ico{background:var(--acc);color:#fff;border-radius:50%}
 /* ---------- HOME ---------- */
-#home .main{flex:1;margin:8px;border-radius:20px;overflow:auto;background:linear-gradient(160deg,#ffd9cf 0%,#ffeede 35%,#fff 70%)}
+#home .main{flex:1;margin:8px;border-radius:20px;overflow:auto;background:linear-gradient(160deg,#f3cfda 0%,#fbecf0 35%,#fff 70%)}
 .hero{padding:64px 40px 24px;text-align:center}
-.hero h1{margin:0 0 28px;font-size:clamp(28px,4vw,40px);letter-spacing:-.01em;font-weight:500;background:linear-gradient(90deg,var(--acc),#c2410c);-webkit-background-clip:text;color:transparent}
+.hero h1{margin:0 0 28px;font-size:clamp(28px,4vw,40px);letter-spacing:-.01em;font-weight:500;background:linear-gradient(90deg,var(--acc),#7a1f38);-webkit-background-clip:text;color:transparent}
 .searchbar{max-width:760px;margin:auto;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 20px;box-shadow:0 4px 20px #0000000d;color:var(--mut)}
 .searchbar input{border:0;outline:0;font:inherit;flex:1;font-size:15px}
 .cats{display:flex;justify-content:center;gap:12px;margin:40px auto 10px;max-width:1100px;overflow-x:auto;padding:4px 8px}
@@ -176,7 +176,15 @@ input.f,select.f{font:inherit;padding:10px 12px;font-size:15px;border:1px solid 
 .tpl:hover .pv{background:#e8eaed}.tpl img{max-width:86%;max-height:130px;box-shadow:0 2px 6px #0002}
 .tpl b{display:block;font-weight:500;font-size:14px;margin-top:8px}.tpl small{color:var(--mut);font-size:12px}
 .menu .alignrow{display:flex;gap:2px}.menu .alignrow button{flex:1;justify-content:center;padding:8px 0}
-#sFill{width:34px;height:30px;padding:2px;border:1px solid var(--line);border-radius:8px}
+.chipc{width:30px;height:30px;border-radius:50%!important;padding:0!important;border:1px solid #0000002a!important;margin:0 4px}
+.cpick{display:flex;gap:8px}.cpick input[type=color]{width:46px;height:42px;padding:3px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.tabs2{display:flex;border-bottom:1px solid var(--line)}.tabs2 button{flex:1;padding:10px;font-size:15px;color:var(--mut);border-bottom:3px solid transparent}
+.tabs2 button.on{color:var(--txt);font-weight:500;border-color:var(--acc)}
+.ord{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ord .btn{justify-content:flex-start;font-weight:400;padding:10px 12px}.ord .btn svg{width:18px;height:18px;color:var(--mut)}
+.ord .btn:disabled,.adv input:disabled{opacity:.5;cursor:default}
+#posArr{display:flex;flex-direction:column;gap:14px}#posArr[hidden]{display:none}
+.adv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.adv label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500}
+.adv .f{padding:9px 10px;background:var(--bg);border-color:transparent}.adv .btn{height:41px;justify-content:center}
 .stage{flex:1;background:var(--bg);position:relative;overflow:auto}
 .stagein{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px 40px}
 .pagetools{align-self:stretch;display:flex;justify-content:center}
@@ -343,9 +351,9 @@ input[type=range]{accent-color:var(--acc);width:150px}
       <button data-p="pin"><span class="ico"><svg><use href="#i-shapes"/></svg></span>องค์ประกอบ</button>
       <button data-p="text"><span class="ico"><svg><use href="#i-text"/></svg></span>ข้อความ</button>
       <button data-p="draw"><span class="ico"><svg><use href="#i-brush"/></svg></span>วาด</button>
-      <button data-p="bg"><span class="ico"><svg><use href="#i-bg"/></svg></span>พื้นหลัง</button>
+      <button data-p="bg"><span class="ico"><svg><use href="#i-bg"/></svg></span>สี</button>
       <button data-p="up"><span class="ico"><svg><use href="#i-cloud"/></svg></span>อัพโหลด</button>
-      <button data-p="layers"><span class="ico"><svg><use href="#i-layers"/></svg></span>เลเยอร์</button>
+      <button data-p="pos" data-tab="lyr"><span class="ico"><svg><use href="#i-layers"/></svg></span>เลเยอร์</button>
     </nav>
     <aside class="panel" id="panel-text" hidden>
       <label class="pill"><svg><use href="#i-search"/></svg><input id="fontQ" placeholder="ค้นหาฟอนต์"></label>
@@ -370,19 +378,51 @@ input[type=range]{accent-color:var(--acc);width:150px}
     <aside class="panel" id="panel-draw" hidden>
       <h4>ปากกา</h4>
       <div class="hint">ลากบนผืนงานเพื่อวาด ปิดแผงนี้เพื่อกลับไปเลือกและย้ายองค์ประกอบ</div>
-      <label class="toggle">สีปากกา<input type="color" id="penColor" value="#ef5a4c"></label>
+      <label class="toggle">สีปากกา<input type="color" id="penColor" value="#be3455"></label>
       <div class="swatches" id="penSw"></div>
       <label class="fxr"><span>ขนาด<output id="penOut">12</output></span><input type="range" id="penSize" min="1" max="120" value="12"></label>
     </aside>
     <aside class="panel" id="panel-bg" hidden>
-      <h4>สีพื้นหลังของหน้า</h4>
-      <div class="swatches" id="bgSw"></div>
-      <label class="toggle">เลือกสีเอง<input type="color" id="bgColor" value="#ffffff"></label>
+      <h4 id="colorTitle">สีพื้นหลัง</h4>
+      <div class="hint">เลือกชิ้นงานบนผืนงานเพื่อเปลี่ยนสีชิ้นนั้น ไม่เลือกอะไร = เปลี่ยนสีพื้นหลัง</div>
+      <div class="cpick"><input type="color" id="bgColor" value="#ffffff" aria-label="เลือกสีเอง"><input id="bgHex" class="f" maxlength="7" aria-label="รหัสสี" placeholder="#BE3455"></div>
+      <h4>สีในดีไซน์นี้</h4><div class="swatches" id="docSw"></div>
+      <div id="photoBox" hidden><h4>สีของภาพถ่าย</h4><div class="swatches" id="photoSw"></div></div>
+      <h4>สีเดียวตามค่าเริ่มต้น</h4><div class="swatches" id="bgSw"></div>
+      <h4>สีกราเดียนต์</h4><div class="swatches" id="gradSw"></div>
     </aside>
-    <aside class="panel" id="panel-layers" hidden>
-      <h4>เลเยอร์</h4>
-      <div class="hint">บนสุดอยู่หน้าสุด · ดับเบิลคลิกชื่อเพื่อเปลี่ยนชื่อ</div>
-      <div id="layers"></div>
+    <aside class="panel" id="panel-pos" hidden>
+      <div class="tabs2" role="tablist"><button role="tab" data-t="arr">จัดวาง</button><button role="tab" data-t="lyr">เลเยอร์</button></div>
+      <div id="posArr">
+        <div class="ord">
+          <button class="btn out" onclick="layer(1)"><svg><use href="#i-up"/></svg>ย้ายขึ้นหนึ่งชั้น</button>
+          <button class="btn out" onclick="layer(-1)"><svg><use href="#i-dn"/></svg>ด้านหลัง</button>
+          <button class="btn out" onclick="layer('front')"><svg><use href="#i-up"/></svg>ด้านหน้าสุด</button>
+          <button class="btn out" onclick="layer('back')"><svg><use href="#i-dn"/></svg>ด้านหลังสุด</button>
+        </div>
+        <h4>จัดแนว</h4>
+        <div class="ord al">
+          <button class="btn out" onclick="align('l')"><svg><use href="#i-al-l"/></svg>ซ้าย</button>
+          <button class="btn out" onclick="align('t')"><svg><use href="#i-al-t"/></svg>บน</button>
+          <button class="btn out" onclick="align('c')"><svg><use href="#i-al-c"/></svg>กึ่งกลาง</button>
+          <button class="btn out" onclick="align('m')"><svg><use href="#i-al-m"/></svg>กลาง</button>
+          <button class="btn out" onclick="align('r')"><svg><use href="#i-al-r"/></svg>ขวา</button>
+          <button class="btn out" onclick="align('b')"><svg><use href="#i-al-b"/></svg>ล่าง</button>
+        </div>
+        <h4>ขั้นสูง</h4>
+        <div class="adv">
+          <label>ความกว้าง<input class="f" id="pW" type="number" min="1"></label>
+          <label>ความสูง<input class="f" id="pH" type="number" min="1"></label>
+          <label>อัตราส่วน<button class="btn out" id="pLock" aria-pressed="true" title="ล็อกอัตราส่วน"><svg><use href="#i-lock"/></svg></button></label>
+          <label>X<input class="f" id="pX" type="number"></label>
+          <label>Y<input class="f" id="pY" type="number"></label>
+          <label>หมุน<input class="f" id="pR" type="number"></label>
+        </div>
+      </div>
+      <div id="posLyr" hidden>
+        <div class="hint">บนสุดอยู่หน้าสุด · ดับเบิลคลิกชื่อเพื่อเปลี่ยนชื่อ</div>
+        <div id="layers"></div>
+      </div>
     </aside>
     <aside class="panel" id="panel-fx" hidden>
       <div id="fxBody"></div>
@@ -390,8 +430,8 @@ input[type=range]{accent-color:var(--acc);width:150px}
     <aside class="panel" id="panel-pin" hidden>
       <h4>รูปทรงและเส้น</h4>
       <div class="shapes">
-        <button onclick="addShape('rect')" aria-label="สี่เหลี่ยม" title="สี่เหลี่ยม"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" fill="#ef5a4c" stroke="none"/></svg></button>
-        <button onclick="addShape('round')" aria-label="สี่เหลี่ยมมุมมน" title="สี่เหลี่ยมมุมมน"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="#ff9f5a" stroke="none"/></svg></button>
+        <button onclick="addShape('rect')" aria-label="สี่เหลี่ยม" title="สี่เหลี่ยม"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" fill="#be3455" stroke="none"/></svg></button>
+        <button onclick="addShape('round')" aria-label="สี่เหลี่ยมมุมมน" title="สี่เหลี่ยมมุมมน"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="#e2728c" stroke="none"/></svg></button>
         <button onclick="addShape('circle')" aria-label="วงกลม" title="วงกลม"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#a855f7" stroke="none"/></svg></button>
         <button onclick="addShape('tri')" aria-label="สามเหลี่ยม" title="สามเหลี่ยม"><svg viewBox="0 0 24 24"><path d="M12 4l9 16H3z" fill="#0d9488" stroke="none"/></svg></button>
         <button onclick="addShape('star')" aria-label="ดาว" title="ดาว"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" fill="#f5b301" stroke="none"/></svg></button>
@@ -421,27 +461,27 @@ input[type=range]{accent-color:var(--acc);width:150px}
       <div class="ctxbar" id="ctxbar">
         <button class="imgOnly" onclick="cutBg()">ตัวลบแบ็คกราวน์</button>
         <button class="imgOnly" onclick="openPanel('fx')">ปรับแต่งรูป</button>
-        <input class="fillOnly" type="color" id="sFill" title="สี" aria-label="สี">
+        <button class="fillOnly chipc" id="sFill" onclick="openPanel('bg')" title="สี" aria-label="สี"></button>
         <button class="multiOnly" onclick="groupSel()">จัดกลุ่ม</button>
         <button class="groupOnly" onclick="ungroupSel()">ยกเลิกกลุ่ม</button>
         <span class="sep"></span>
         <button onclick="flip()">พลิก</button>
         <label>ความโปร่งใส<input id="op" type="range" min="0" max="100"></label>
         <button class="notImg" onclick="openPanel('fx')">เอฟเฟกต์</button>
-        <button onclick="toggleMenu()">ตำแหน่ง</button>
+        <button onclick="openPos('arr')">ตำแหน่ง</button>
       </div>
       <div class="ctxbar tbar" id="tbar">
         <select id="tFont"></select>
         <button onclick="stepSize(-2)">−</button><input id="tSize" type="number" min="6"><button onclick="stepSize(2)">+</button>
         <span class="sep"></span>
-        <input id="tColor" type="color" title="สีตัวอักษร">
+        <button class="chipc" id="tColor" onclick="openPanel('bg')" title="สีตัวอักษร" aria-label="สีตัวอักษร"></button>
         <button class="tg" id="tB" onclick="toggleT('fontWeight','bold','normal')"><b>B</b></button>
         <button class="tg" id="tI" onclick="toggleT('fontStyle','italic','normal')"><i>I</i></button>
         <button class="tg" id="tU" onclick="toggleT('underline',true,false)"><u>U</u></button>
         <span class="sep"></span>
         <button onclick="cycleAlign()" id="tAlign">ชิดซ้าย</button>
         <button onclick="openPanel('fx')">เอฟเฟกต์</button>
-        <button onclick="toggleMenu()">ตำแหน่ง</button>
+        <button onclick="openPos('arr')">ตำแหน่ง</button>
       </div>
       <div class="float" id="float">
         <button onclick="lock()" title="ล็อก"><svg><use href="#i-lock"/></svg></button>
@@ -538,7 +578,7 @@ function pickPreset(i){const p=PRESETS[i];newDoc(toPx(p[1],p[3]),toPx(p[2],p[3])
 function createFromInputs(){newDoc(toPx(+w.value,unit.value),toPx(+h.value,unit.value),'กำหนดขนาดเอง',sizeTxt([0,w.value,h.value,unit.value]));}
 
 /* ===== canvas ===== */
-fabric.Object.prototype.set({cornerStyle:'circle',cornerColor:'#fff',cornerStrokeColor:'#ef5a4c',borderColor:'#ef5a4c',transparentCorners:false,cornerSize:12,padding:0});
+fabric.Object.prototype.set({cornerStyle:'circle',cornerColor:'#fff',cornerStrokeColor:'#be3455',borderColor:'#be3455',transparentCorners:false,cornerSize:12,padding:0});
 const cv=new fabric.Canvas('c',{backgroundColor:'#fff',preserveObjectStacking:true});
 fabric.filterBackend=new fabric.Canvas2dFilterBackend();  // WebGL backend caps images at 2048px; 2d is slower but takes any size
 const PROPS=['pincutId','name','fx','lockMovementX','lockMovementY','lockRotation','lockScalingX','lockScalingY','hasControls'];  // custom/lock state kept in undo + saved designs
@@ -582,16 +622,16 @@ function placeFloat(){const o=act(),f=$('float');if(!o){f.style.display='none';r
  f.style.top=(c.top-s.top+st.scrollTop+r.top-f.offsetHeight-14)+'px';}
 const isText=o=>o&&o.type==='i-text';
 const SHAPE_T=['rect','circle','triangle','polygon','line','path'],strokeColored=o=>['line','path'].includes(o.type);
-const hex=c=>'#'+new fabric.Color(c||'#000').toHex();
+const hex=c=>typeof c==='string'?'#'+new fabric.Color(c||'#000').toHex():'#ffffff';  // gradients have no single hex
 function onSel(){const o=act(),t=isText(o),ty=o?.type;if(o)$('op').value=Math.round(o.opacity*100);$('ctxbar').style.display=t?'none':'flex';$('tbar').style.display=t?'flex':'none';if(t)syncTbar();
  const show=(c,v)=>document.querySelectorAll('#ctxbar .'+c).forEach(e=>e.style.display=v?'':'none');
  show('imgOnly',ty==='image');show('notImg',ty!=='image');show('multiOnly',ty==='activeSelection');show('groupOnly',ty==='group');show('fillOnly',SHAPE_T.includes(ty));
- if(SHAPE_T.includes(ty))$('sFill').value=hex(o[strokeColored(o)?'stroke':'fill']);
- placeFloat();renderLayers();if(openP==='fx')renderFx();}
+ if(SHAPE_T.includes(ty))$('sFill').style.background=o[strokeColored(o)?'stroke':'fill'];
+ placeFloat();renderLayers();renderPanels();}
 cv.on('selection:created',onSel);cv.on('selection:updated',onSel);
-cv.on('selection:cleared',()=>{renderLayers();if(openP==='fx')renderFx();$('ctxbar').style.display='none';$('tbar').style.display='none';$('float').style.display='none';$('menu').style.display='none';});
+cv.on('selection:cleared',()=>{renderLayers();renderPanels();$('ctxbar').style.display='none';$('tbar').style.display='none';$('float').style.display='none';$('menu').style.display='none';});
 ['object:moving','object:scaling','object:rotating'].forEach(e=>cv.on(e,()=>{$('float').style.display='none';$('menu').style.display='none';}));
-cv.on('object:modified',()=>{save();placeFloat();});$('stage').onscroll=placeFloat;
+cv.on('object:modified',()=>{save();placeFloat();if(openP==='pos')renderPos();});$('stage').onscroll=placeFloat;
 function toggleMenu(){const m=$('menu'),f=$('float');if(m.style.display==='flex'){m.style.display='none';return;}
  m.style.display='flex';m.style.left=(f.offsetLeft+f.offsetWidth-20)+'px';m.style.top=(f.offsetTop+f.offsetHeight+6)+'px';}
 function del(){cv.getActiveObjects().forEach(o=>cv.remove(o));cv.discardActiveObject();cv.requestRenderAll();save();}
@@ -634,9 +674,9 @@ let openP=null;
 function openPanel(p){openP=p;
  document.querySelectorAll('#editor .rail button').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
  document.querySelectorAll('#editor .panel').forEach(x=>x.hidden=x.id!=='panel-'+p);$('collapse').classList.toggle('on',!!p);
- cv.isDrawingMode=p==='draw';if(p==='draw')syncPen();if(p==='layers')renderLayers();if(p==='fx')renderFx();if(p==='bg')renderBg();
+ cv.isDrawingMode=p==='draw';if(p==='draw')syncPen();renderPanels();
  requestAnimationFrame(fit);}
-document.querySelectorAll('#editor .rail button').forEach(b=>b.onclick=()=>openPanel(openP===b.dataset.p?null:b.dataset.p));
+document.querySelectorAll('#editor .rail button').forEach(b=>b.onclick=()=>{if(b.dataset.tab&&openP!=='pos')posTab=b.dataset.tab;openPanel(openP===b.dataset.p?null:b.dataset.p);});
 function thumb(src,box,onClick,getBtn){const d=document.createElement('div');d.className='it';
  d.innerHTML=`<img src="${src}">`+(getBtn?'<button class="get">⬇ โหลด</button>':'');
  if(getBtn)d.querySelector('.get').onclick=e=>{e.stopPropagation();const g=e.currentTarget;if(g.disabled)return;g.disabled=true;g.textContent='✓ อยู่ในอัพโหลด';getBtn(src);};
@@ -748,10 +788,10 @@ $('homeUpload').onchange=e=>{readFiles(e.target.files,async(src,name)=>{const it
  const im=new Image();im.onload=()=>{newDoc(im.width,im.height,'จากรูปที่อัพโหลด');libThumb(it);addImage(it.src,it.id);};im.src=it.src;});e.target.value='';};
 
 /* ===== home: quick-create row ===== */
-const CATS=[[4,'โพสต์','#ef5a4c','i-img'],[1,'สตอรี่','#e8437a','i-phone'],[2,'Instagram 4:5','#a855f7','i-insta'],[3,'เอกสาร A4','#0d9488','i-doc'],
+const CATS=[[4,'โพสต์','#be3455','i-img'],[1,'สตอรี่','#e8437a','i-phone'],[2,'Instagram 4:5','#a855f7','i-insta'],[3,'เอกสาร A4','#0d9488','i-doc'],
  [0,'เอกสาร US','#2563eb','i-doc'],[5,'YouTube','#dc2626','i-play'],[6,'โลโก้','#d97706','i-star']];
 const KIND=Object.fromEntries(CATS.map(([i,,c,ic])=>[PRESETS[i][0],[c,ic]]));
-const kindLook=k=>KIND[k]||(k==='จากรูปที่อัพโหลด'?['#ff9f5a','i-cloud']:['#5e6670','i-resize']);
+const kindLook=k=>KIND[k]||(k==='จากรูปที่อัพโหลด'?['#e2728c','i-cloud']:['#5e6670','i-resize']);
 $('cats').innerHTML=CATS.map(([i,l,c,ic])=>`<button class="cat" onclick="pickPreset(${i})"><span class="circ" style="background:${c}"><svg><use href="#${ic}"/></svg></span>${l}</button>`).join('')+
  `<button class="cat" onclick="go('size')"><span class="circ ghost"><svg><use href="#i-resize"/></svg></span>กำหนดขนาดเอง</button>`+
  `<button class="cat" onclick="homeUpload.click()"><span class="circ ghost"><svg><use href="#i-cloud"/></svg></span>อัพโหลด</button>`;
@@ -904,13 +944,12 @@ renderFonts();
 
 /* text toolbar */
 async function setFont(n){const o=act();if(!isText(o))return;await document.fonts.load(`${o.fontWeight} 40px "${n}"`);o.set('fontFamily',n);cv.requestRenderAll();save();syncTbar();}
-function syncTbar(){const o=act();if(!isText(o))return;$('tFont').value=o.fontFamily;$('tSize').value=Math.round(o.fontSize);$('tColor').value=o.fill;
+function syncTbar(){const o=act();if(!isText(o))return;$('tFont').value=o.fontFamily;$('tSize').value=Math.round(o.fontSize);$('tColor').style.background=o.fill;
  $('tB').classList.toggle('on',o.fontWeight==='bold');$('tI').classList.toggle('on',o.fontStyle==='italic');$('tU').classList.toggle('on',!!o.underline);
  $('tAlign').textContent={left:'ชิดซ้าย',center:'กึ่งกลาง',right:'ชิดขวา'}[o.textAlign]||'ชิดซ้าย';}
 $('tFont').onchange=e=>setFont(e.target.value);
 $('tSize').onchange=e=>{const o=act();if(isText(o)){o.set('fontSize',Math.max(6,+e.target.value));cv.requestRenderAll();save();placeFloat();}};
 function stepSize(d){const o=act();if(isText(o)){o.set('fontSize',Math.max(6,o.fontSize+d));cv.requestRenderAll();save();syncTbar();placeFloat();}}
-$('tColor').oninput=e=>{const o=act();if(isText(o)){o.set('fill',e.target.value);cv.requestRenderAll();}};$('tColor').onchange=save;
 function toggleT(k,on,off){const o=act();if(isText(o)){o.set(k,o[k]===on?off:on);cv.requestRenderAll();save();syncTbar();}}
 function cycleAlign(){const o=act();if(isText(o)){const a=['left','center','right'];o.set('textAlign',a[(a.indexOf(o.textAlign)+1)%3]);cv.requestRenderAll();save();syncTbar();}}
 cv.on('text:changed',placeFloat);cv.on('text:editing:exited',save);
@@ -933,10 +972,10 @@ async function exportFile(){cv.discardActiveObject();
  catch(e){toast('บันทึกไม่สำเร็จ: '+(e.message||e),5000);}}
 
 /* ===== shapes & lines ===== */
-const ACC='#ef5a4c';
+const ACC='#be3455';
 const starPts=(R,r)=>[...Array(10)].map((_,i)=>{const a=Math.PI/5*i-Math.PI/2,d=i%2?r:R;return {x:R+d*Math.cos(a),y:R+d*Math.sin(a)};});
 const SHAPES={rect:s=>new fabric.Rect({width:s,height:s,fill:ACC}),
- round:s=>new fabric.Rect({width:s,height:s,rx:s*.18,ry:s*.18,fill:'#ff9f5a'}),
+ round:s=>new fabric.Rect({width:s,height:s,rx:s*.18,ry:s*.18,fill:'#e2728c'}),
  circle:s=>new fabric.Circle({radius:s/2,fill:'#a855f7'}),
  tri:s=>new fabric.Triangle({width:s,height:s*.87,fill:'#0d9488'}),
  star:s=>new fabric.Polygon(starPts(s/2,s/4.6),{fill:'#f5b301'}),
@@ -944,26 +983,66 @@ const SHAPES={rect:s=>new fabric.Rect({width:s,height:s,fill:ACC}),
  arrow:s=>new fabric.Path(`M0 ${s*.1} L${s*1.4} ${s*.1} M${s*1.22} 0 L${s*1.4} ${s*.1} L${s*1.22} ${s*.2}`,
   {fill:'',stroke:'#0e1318',strokeWidth:Math.max(2,s/40),strokeLineCap:'round',strokeLineJoin:'round'})};
 function addShape(k){const o=SHAPES[k](Math.min(docW,docH)*.3);o.set({left:(docW-o.getScaledWidth())/2,top:(docH-o.getScaledHeight())/2});cv.add(o).setActiveObject(o);save();}
-$('sFill').oninput=e=>{const o=act();if(o&&SHAPE_T.includes(o.type)){o.set(strokeColored(o)?'stroke':'fill',e.target.value);cv.requestRenderAll();}};
-$('sFill').onchange=()=>save();
 
 /* ===== page background & pen ===== */
-const SWATCH=['#ffffff','#f2f3f5','#0e1318','#ef5a4c','#ff9f5a','#f5b301','#fdebe8','#ffeede','#fff4c2','#d9f2ec','#dbeafe','#ede9fe'];
-const swatches=(box,cur,pick)=>{$(box).innerHTML=SWATCH.map(c=>`<button style="background:${c}" data-c="${c}" aria-label="สี ${c}" class="${c===cur?'on':''}"></button>`).join('');
+const SWATCH=['#000000','#545454','#737373','#a6a6a6','#d9d9d9','#ffffff','#be3455','#ff3131','#ff66c4','#e2a9f1','#cb6ce6','#8c52ff',
+ '#0097b2','#0cc0df','#5ce1e6','#38b6ff','#5271ff','#004aad','#00bf63','#7ed957','#c1ff72','#ffde59','#ffbd59','#ff914d'];
+const GRADS=[['#000000','#737373'],['#000000','#ffffff'],['#a6a6a6','#ffffff'],['#be3455','#e2728c'],['#be3455','#5b2a86'],['#ff3131','#ff914d'],
+ ['#ff66c4','#ffde59'],['#8c52ff','#ff66c4'],['#5271ff','#be3455'],['#0097b2','#7ed957'],['#38b6ff','#c1ff72'],['#004aad','#cb6ce6']];
+const swatches=(box,list,cur,pick)=>{$(box).innerHTML=list.map(c=>`<button style="background:${c}" data-c="${c}" aria-label="สี ${c}" class="${c===cur?'on':''}"></button>`).join('');
  $(box).onclick=e=>{const c=e.target.dataset.c;if(c)pick(c);};};
-function renderBg(){const c=typeof cv.backgroundColor==='string'?hex(cv.backgroundColor):'#ffffff';$('bgColor').value=c;swatches('bgSw',c,setBg);}
-function setBg(c){cv.backgroundColor=c;cv.requestRenderAll();save();renderBg();}
-$('bgColor').oninput=e=>{cv.backgroundColor=e.target.value;cv.requestRenderAll();};$('bgColor').onchange=e=>setBg(e.target.value);
+/* colour panel paints the selected element, or the page background when nothing is selected */
+const colorTarget=()=>{const o=act();return o&&!['activeSelection','group','image'].includes(o.type)?o:null;};
+const colorKey=o=>strokeColored(o)?'stroke':'fill';
+function paint(c,commit){const o=colorTarget();if(o){o.set(colorKey(o),c);o.dirty=true;}else cv.backgroundColor=c;cv.requestRenderAll();
+ if(commit){save();renderBg();onSelColor();}}
+function onSelColor(){const o=act();if(isText(o))$('tColor').style.background=o.fill;if(o&&SHAPE_T.includes(o.type))$('sFill').style.background=o[colorKey(o)];}
+function gradient(stops,o){return new fabric.Gradient({type:'linear',gradientUnits:o?'percentage':'pixels',coords:o?{x1:0,y1:0,x2:1,y2:1}:{x1:0,y1:0,x2:docW,y2:docH},
+ colorStops:stops.map((c,i)=>({offset:i/(stops.length-1),color:c}))});}
+function photoColors(){const n=new Map();  // dominant colours of the images on the page, coarsely bucketed
+ cv.getObjects().filter(o=>o.type==='image').forEach(o=>{const c=document.createElement('canvas');c.width=c.height=24;const x=c.getContext('2d');
+  try{x.drawImage(o.getElement(),0,0,24,24);const d=x.getImageData(0,0,24,24).data;
+   for(let i=0;i<d.length;i+=4){const k='#'+[d[i],d[i+1],d[i+2]].map(v=>Math.min(255,(v>>5<<5)+16).toString(16).padStart(2,'0')).join('');n.set(k,(n.get(k)||0)+1);}}catch{}});
+ return [...n].sort((a,b)=>b[1]-a[1]).slice(0,6).map(e=>e[0]);}
+function renderBg(){if(openP!=='bg')return;const o=colorTarget(),cur=o?o[colorKey(o)]:cv.backgroundColor,h=hex(cur);
+ $('colorTitle').textContent=o?'สีของ '+lname(o):'สีพื้นหลัง';$('bgColor').value=h;$('bgHex').value=h.toUpperCase();
+ const used=[...new Set([cv.backgroundColor,...cv.getObjects().flatMap(x=>[x.fill,x.stroke])].filter(c=>typeof c==='string'&&c).map(hex))].slice(0,12);
+ swatches('docSw',used,h,c=>paint(c,true));swatches('bgSw',SWATCH,h,c=>paint(c,true));
+ const ph=photoColors();$('photoBox').hidden=!ph.length;swatches('photoSw',ph,h,c=>paint(c,true));
+ $('gradSw').innerHTML=GRADS.map((g,i)=>`<button style="background:linear-gradient(135deg,${g.join(',')})" data-g="${i}" aria-label="กราเดียนต์ ${g.join(' ถึง ')}"></button>`).join('');}
+$('gradSw').onclick=e=>{const i=e.target.dataset.g;if(i==null)return;const o=colorTarget();paint(gradient(GRADS[i],o),true);};
+$('bgColor').oninput=e=>paint(e.target.value);$('bgColor').onchange=e=>paint(e.target.value,true);
+$('bgHex').onchange=e=>{const v=e.target.value.trim().replace(/^#?/,'#');if(/^#[0-9a-f]{6}$/i.test(v))paint(v,true);else{toast('รหัสสีต้องเป็นแบบ #BE3455');renderBg();}};
+
+/* position panel: arrange + exact size/position/rotation, and the layers tab */
+let posTab='arr';
+function openPos(t){posTab=t;openPanel('pos');}
+document.querySelectorAll('#panel-pos .tabs2 button').forEach(b=>b.onclick=()=>{posTab=b.dataset.t;renderPanels();});
+function renderPos(){if(openP!=='pos')return;
+ document.querySelectorAll('#panel-pos .tabs2 button').forEach(b=>{b.classList.toggle('on',b.dataset.t===posTab);b.setAttribute('aria-selected',b.dataset.t===posTab);});
+ $('posArr').hidden=posTab!=='arr';$('posLyr').hidden=posTab!=='lyr';if(posTab==='lyr')return renderLayers();
+ const o=act(),r=o?.getBoundingRect(true,true),ids=['pW','pH','pX','pY','pR'];
+ ids.forEach(id=>$(id).disabled=!o);document.querySelectorAll('#posArr .btn').forEach(b=>b.disabled=!o);
+ if(!o){ids.forEach(id=>$(id).value='');$(ids[0]).placeholder='--';return;}
+ $('pW').value=Math.round(o.getScaledWidth());$('pH').value=Math.round(o.getScaledHeight());$('pX').value=Math.round(r.left);$('pY').value=Math.round(r.top);$('pR').value=Math.round(o.angle||0);}
+$('pLock').onclick=e=>{const b=e.currentTarget,on=b.getAttribute('aria-pressed')!=='true';b.setAttribute('aria-pressed',on);b.innerHTML=`<svg><use href="#i-${on?'lock':'unlock'}"/></svg>`;};
+['pW','pH','pX','pY','pR'].forEach(id=>$(id).onchange=e=>{const o=act(),v=+e.target.value;if(!o||!Number.isFinite(v))return renderPos();
+ const lockR=$('pLock').getAttribute('aria-pressed')==='true',ratio=o.getScaledHeight()/o.getScaledWidth(),r=o.getBoundingRect(true,true);
+ if(id==='pW'&&v>0){o.set('scaleX',v/o.width);if(lockR)o.set('scaleY',v*ratio/o.height);}
+ if(id==='pH'&&v>0){o.set('scaleY',v/o.height);if(lockR)o.set('scaleX',v/ratio/o.width);}
+ if(id==='pX')o.set('left',o.left+v-r.left);if(id==='pY')o.set('top',o.top+v-r.top);if(id==='pR')o.rotate(v);
+ o.setCoords();cv.requestRenderAll();save();placeFloat();renderPos();});
+function renderPanels(){if(openP==='fx')renderFx();if(openP==='bg')renderBg();if(openP==='pos')renderPos();if(openP==='draw')syncPen();}
 function syncPen(){const b=cv.freeDrawingBrush;b.color=$('penColor').value;b.width=+$('penSize').value;$('penOut').textContent=b.width;
- swatches('penSw',b.color,c=>{$('penColor').value=c;syncPen();});}
+ swatches('penSw',SWATCH,b.color,c=>{$('penColor').value=c;syncPen();});}
 $('penColor').oninput=syncPen;$('penSize').oninput=syncPen;
 cv.on('path:created',()=>save());
 
 /* ===== templates: objects in fractions of the page, so one template fits any size ===== */
 const T=(text,o)=>({type:'i-text',text,styles:{},originX:'center',textAlign:'center',fontFamily:'Kanit',fill:'#0e1318',...o});
 const TEMPLATES=[
- {name:'โปรโมชันลดราคา',preset:4,fonts:['Kanit'],bg:'#fff4ef',make:(W,H,m)=>[
-  {type:'circle',left:W-m*.5,top:-m*.22,radius:m*.38,fill:'#ff9f5a',opacity:.35},
+ {name:'โปรโมชันลดราคา',preset:4,fonts:['Kanit'],bg:'#fdf1f4',make:(W,H,m)=>[
+  {type:'circle',left:W-m*.5,top:-m*.22,radius:m*.38,fill:'#e2728c',opacity:.35},
   {type:'circle',left:-m*.15,top:H-m*.32,radius:m*.25,fill:ACC,opacity:.18},
   T('SALE',{left:W/2,top:H*.2,fontSize:m*.26,fontWeight:'bold',fill:ACC}),
   T('ลดสูงสุด 50%',{left:W/2,top:H*.5,fontSize:m*.085,fontWeight:'bold'}),
@@ -973,9 +1052,9 @@ const TEMPLATES=[
  {name:'คำคมสตอรี่',preset:1,fonts:['Mitr'],bg:'#1d2127',make:(W,H,m)=>[
   T('“',{left:W/2,top:H*.2,fontSize:m*.5,fill:ACC,fontFamily:'Mitr'}),
   T('ความพยายาม\nไม่เคยทรยศใคร',{left:W/2,top:H*.42,fontSize:m*.1,fill:'#fff',fontFamily:'Mitr',lineHeight:1.3}),
-  {type:'rect',originX:'center',left:W/2,top:H*.62,width:m*.14,height:m*.01,fill:'#ff9f5a'},
+  {type:'rect',originX:'center',left:W/2,top:H*.62,width:m*.14,height:m*.01,fill:'#e2728c'},
   T('— ชื่อผู้พูด',{left:W/2,top:H*.65,fontSize:m*.045,fill:'#c9ced6',fontFamily:'Mitr'})]},
- {name:'โปสเตอร์กิจกรรม',preset:3,fonts:['Kanit','Sarabun'],bg:'#ffeede',make:(W,H,m)=>[
+ {name:'โปสเตอร์กิจกรรม',preset:3,fonts:['Kanit','Sarabun'],bg:'#fbecf0',make:(W,H,m)=>[
   {type:'rect',left:0,top:0,width:W,height:H*.4,fill:ACC},
   T('WORKSHOP',{left:W/2,top:H*.07,fontSize:m*.06,fill:'#fff',charSpacing:300}),
   T('ออกแบบกราฟิก\nเบื้องต้น',{left:W/2,top:H*.14,fontSize:m*.12,fill:'#fff',fontWeight:'bold',lineHeight:1.1}),
@@ -985,7 +1064,7 @@ const TEMPLATES=[
   T('ลงทะเบียนที่ www.example.com',{left:W/2,top:H*.89,fontSize:m*.038,fontFamily:'Sarabun'})]},
  {name:'ปก YouTube',preset:5,fonts:['Kanit'],bg:'#0e1318',make:(W,H,m)=>[
   {type:'rect',left:W*.6,top:0,width:W*.4,height:H,fill:ACC},
-  {type:'circle',originX:'center',originY:'center',left:W*.8,top:H*.5,radius:m*.3,fill:'#ff9f5a'},
+  {type:'circle',originX:'center',originY:'center',left:W*.8,top:H*.5,radius:m*.3,fill:'#e2728c'},
   T('10 เทคนิค',{originX:'left',textAlign:'left',left:W*.06,top:H*.18,fontSize:m*.18,fill:'#fff',fontWeight:'bold'}),
   T('ที่มือใหม่\nต้องรู้!',{originX:'left',textAlign:'left',left:W*.06,top:H*.42,fontSize:m*.16,fill:'#f5b301',fontWeight:'bold',lineHeight:1.05})]},
  {name:'โลโก้ร้าน',preset:6,fonts:['Chakra Petch'],bg:'#ffffff',make:(W,H,m)=>[
@@ -1010,7 +1089,7 @@ renderTemplates();
 /* ===== layers ===== */
 const LNAME={'i-text':'ข้อความ',image:'รูปภาพ',rect:'สี่เหลี่ยม',circle:'วงกลม',triangle:'สามเหลี่ยม',polygon:'ดาว',line:'เส้น',path:'เส้นวาด',group:'กลุ่ม'};
 const lname=o=>o.name||(o.type==='i-text'?o.text.split('\n')[0].slice(0,30):LNAME[o.type]||o.type);
-function renderLayers(){if(openP!=='layers')return;const box=$('layers'),objs=cv.getObjects().slice().reverse(),sel=cv.getActiveObjects();
+function renderLayers(){if(openP!=='pos'||posTab!=='lyr')return;const box=$('layers'),objs=cv.getObjects().slice().reverse(),sel=cv.getActiveObjects();
  box.innerHTML=objs.length?'':'<div class="empty">ยังไม่มีองค์ประกอบบนหน้านี้</div>';
  objs.forEach(o=>{const r=document.createElement('div'),n=lname(o);r.className='lyr'+(sel.includes(o)?' on':'')+(o.visible?'':' hid');
   r.innerHTML=`<button class="ln"></button>
