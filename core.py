@@ -143,7 +143,7 @@ def trash_file(folder: Path, file_id: str) -> Path:
 # ---------- designs (Downloads/PinCut/designs/<id>.json) ----------
 
 _DESIGN_ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
-_DESIGN_FIELDS = ("id", "name", "kind", "size", "w", "h", "thumb", "canvas")  # what the UI may write
+_DESIGN_FIELDS = ("id", "name", "kind", "size", "w", "h", "thumb", "canvas", "more", "branches", "activeBranch", "use")  # what the UI may write; more = pages 2..n
 
 
 def _design_path(folder: Path, design_id: str) -> Path:

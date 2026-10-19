@@ -26,7 +26,7 @@ PIN_JS = r"""
   b.id = 'pincut-save';
   b.textContent = '⬇ เก็บรูปนี้เข้า PinCut';
   b.style.cssText = 'position:fixed;right:24px;bottom:24px;z-index:2147483647;padding:14px 22px;border:0;' +
-    'border-radius:999px;background:#ef5a4c;color:#fff;font:600 16px sans-serif;box-shadow:0 6px 20px #0005;cursor:pointer';
+    'border-radius:999px;background:#be3455;color:#fff;font:600 16px sans-serif;box-shadow:0 6px 20px #0005;cursor:pointer';
   const say = (t) => { b.textContent = t; setTimeout(() => b.textContent = '⬇ เก็บรูปนี้เข้า PinCut', 2500); };
   const big = (img) => {  // the largest candidate from srcset, else src
     const set = (img.srcset || '').split(',').map(s => s.trim().split(' ')[0]).filter(Boolean);
