@@ -176,6 +176,7 @@ input.f,select.f{font:inherit;padding:10px 12px;font-size:16px;border:1px solid 
 .tpl:hover .pv{background:#e8eaed}.tpl img{max-width:86%;max-height:130px;box-shadow:0 2px 6px #0002}
 .tpl b{display:block;font-weight:500;font-size:14px;margin-top:8px}.tpl small{color:var(--mut);font-size:12px}
 .menu .alignrow{display:flex;gap:2px}.menu .alignrow button{flex:1;justify-content:center;padding:8px 0}
+.ctxbar .ib{padding:7px 8px}.chipc.off{opacity:.45}
 .chipc{width:30px;height:30px;border-radius:50%!important;padding:0!important;border:1px solid #0000002a!important;margin:0 4px}
 .cpick{display:flex;gap:8px}.cpick input[type=color]{width:46px;height:42px;padding:3px;border:1px solid var(--line);border-radius:10px;background:#fff}
 .tabs2{display:flex;border-bottom:1px solid var(--line)}.tabs2 button{flex:1;padding:10px;font-size:16px;color:var(--mut);border-bottom:3px solid transparent}
@@ -270,6 +271,8 @@ input[type=range]{accent-color:var(--acc);width:150px}
   <symbol id="i-al-t" viewBox="0 0 24 24"><path d="M3 4h18M7 8h4v12H7zM14 8h4v7h-4z"/></symbol>
   <symbol id="i-al-m" viewBox="0 0 24 24"><path d="M3 12h18M7 6h4v12H7zM14 8.5h4v7h-4z"/></symbol>
   <symbol id="i-al-b" viewBox="0 0 24 24"><path d="M3 20h18M7 4h4v12H7zM14 9h4v7h-4z"/></symbol>
+  <symbol id="i-border" viewBox="0 0 24 24"><path d="M4 6h16" stroke-width="1.5"/><path d="M4 11h16" stroke-width="2.6"/><path d="M4 17h16" stroke-width="4"/></symbol>
+  <symbol id="i-corner" viewBox="0 0 24 24"><path d="M5 20V12a7 7 0 017-7h8"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M11 8h2a2.5 2.5 0 010 5h-2M11 8l-2 10"/></symbol>
 </svg>
 
@@ -461,6 +464,10 @@ input[type=range]{accent-color:var(--acc);width:150px}
       <div class="ctxbar" id="ctxbar">
         <button class="imgOnly" onclick="cutBg()">ตัวลบแบ็คกราวน์</button>
         <button class="imgOnly" onclick="openPanel('fx')">ปรับแต่งรูป</button>
+        <button class="imgOnly chipc" id="duo0" onclick="pickDuo(0)" title="ภาพสองสี: สีเงามืด" aria-label="ภาพสองสี สีเงามืด"></button>
+        <button class="imgOnly chipc" id="duo1" onclick="pickDuo(1)" title="ภาพสองสี: สีไฮไลต์" aria-label="ภาพสองสี สีไฮไลต์"></button>
+        <button class="imgOnly ib" onclick="openPanel('fx')" title="เส้นขอบ" aria-label="เส้นขอบ"><svg><use href="#i-border"/></svg></button>
+        <button class="imgOnly ib" onclick="openPanel('fx')" title="มุมโค้ง" aria-label="มุมโค้ง"><svg><use href="#i-corner"/></svg></button>
         <button class="fillOnly chipc" id="sFill" onclick="openPanel('bg')" title="สี" aria-label="สี"></button>
         <button class="multiOnly" onclick="groupSel()">จัดกลุ่ม</button>
         <button class="groupOnly" onclick="ungroupSel()">ยกเลิกกลุ่ม</button>
@@ -623,10 +630,10 @@ function placeFloat(){const o=act(),f=$('float');if(!o){f.style.display='none';r
 const isText=o=>o&&o.type==='i-text';
 const SHAPE_T=['rect','circle','triangle','polygon','line','path'],strokeColored=o=>['line','path'].includes(o.type);
 const hex=c=>typeof c==='string'?'#'+new fabric.Color(c||'#000').toHex():'#ffffff';  // gradients have no single hex
-function onSel(){const o=act(),t=isText(o),ty=o?.type;if(o)$('op').value=Math.round(o.opacity*100);$('ctxbar').style.display=t?'none':'flex';$('tbar').style.display=t?'flex':'none';if(t)syncTbar();
+function onSel(){const o=act(),t=isText(o),ty=o?.type;if(ty!=='image')duoSlot=null;if(o)$('op').value=Math.round(o.opacity*100);$('ctxbar').style.display=t?'none':'flex';$('tbar').style.display=t?'flex':'none';if(t)syncTbar();
  const show=(c,v)=>document.querySelectorAll('#ctxbar .'+c).forEach(e=>e.style.display=v?'':'none');
  show('imgOnly',ty==='image');show('notImg',ty!=='image');show('multiOnly',ty==='activeSelection');show('groupOnly',ty==='group');show('fillOnly',SHAPE_T.includes(ty));
- if(SHAPE_T.includes(ty))$('sFill').style.background=o[strokeColored(o)?'stroke':'fill'];
+ onSelColor();
  placeFloat();renderLayers();renderPanels();}
 cv.on('selection:created',onSel);cv.on('selection:updated',onSel);
 cv.on('selection:cleared',()=>{renderLayers();renderPanels();$('ctxbar').style.display='none';$('tbar').style.display='none';$('float').style.display='none';$('menu').style.display='none';});
@@ -676,7 +683,7 @@ function openPanel(p){openP=p;
  document.querySelectorAll('#editor .panel').forEach(x=>x.hidden=x.id!=='panel-'+p);$('collapse').classList.toggle('on',!!p);
  cv.isDrawingMode=p==='draw';if(p==='draw')syncPen();renderPanels();
  requestAnimationFrame(fit);}
-document.querySelectorAll('#editor .rail button').forEach(b=>b.onclick=()=>{if(b.dataset.tab&&openP!=='pos')posTab=b.dataset.tab;openPanel(openP===b.dataset.p?null:b.dataset.p);});
+document.querySelectorAll('#editor .rail button').forEach(b=>b.onclick=()=>{duoSlot=null;if(b.dataset.tab&&openP!=='pos')posTab=b.dataset.tab;openPanel(openP===b.dataset.p?null:b.dataset.p);});
 function thumb(src,box,onClick,getBtn){const d=document.createElement('div');d.className='it';
  d.innerHTML=`<img src="${src}">`+(getBtn?'<button class="get">⬇ โหลด</button>':'');
  if(getBtn)d.querySelector('.get').onclick=e=>{e.stopPropagation();const g=e.currentTarget;if(g.disabled)return;g.disabled=true;g.textContent='✓ อยู่ในอัพโหลด';getBtn(src);};
@@ -994,9 +1001,15 @@ const swatches=(box,list,cur,pick)=>{$(box).innerHTML=list.map(c=>`<button style
 /* colour panel paints the selected element, or the page background when nothing is selected */
 const colorTarget=()=>{const o=act();return o&&!['activeSelection','group','image'].includes(o.type)?o:null;};
 const colorKey=o=>strokeColored(o)?'stroke':'fill';
-function paint(c,commit){const o=colorTarget();if(o){o.set(colorKey(o),c);o.dirty=true;}else cv.backgroundColor=c;cv.requestRenderAll();
+let duoSlot=null;
+const duoImg=()=>{const o=act();return duoSlot!=null&&o?.type==='image'?o:null;};
+function pickDuo(i){duoSlot=i;openPanel('bg');}
+function paint(c,commit){const im=duoImg();
+ if(im){if(typeof c!=='string')return toast('ภาพสองสีใช้ได้เฉพาะสีเดียว ไม่ใช่กราเดียนต์');const d=[...(im.fx?.duo||DUO)];d[duoSlot]=c;applyFx(im,'duo',d);}
+ else{const o=colorTarget();if(o){o.set(colorKey(o),c);o.dirty=true;}else cv.backgroundColor=c;}cv.requestRenderAll();
  if(commit){save();renderBg();onSelColor();}}
-function onSelColor(){const o=act();if(isText(o))$('tColor').style.background=o.fill;if(o&&SHAPE_T.includes(o.type))$('sFill').style.background=o[colorKey(o)];}
+function onSelColor(){const o=act();
+ if(o?.type==='image'){const d=o.fx?.duo;[0,1].forEach(i=>{$('duo'+i).style.background=(d||DUO)[i];$('duo'+i).classList.toggle('off',!d);});}if(isText(o))$('tColor').style.background=o.fill;if(o&&SHAPE_T.includes(o.type))$('sFill').style.background=o[colorKey(o)];}
 function gradient(stops,o){return new fabric.Gradient({type:'linear',gradientUnits:o?'percentage':'pixels',coords:o?{x1:0,y1:0,x2:1,y2:1}:{x1:0,y1:0,x2:docW,y2:docH},
  colorStops:stops.map((c,i)=>({offset:i/(stops.length-1),color:c}))});}
 function photoColors(){const n=new Map();  // dominant colours of the images on the page, coarsely bucketed
@@ -1004,8 +1017,8 @@ function photoColors(){const n=new Map();  // dominant colours of the images on 
   try{x.drawImage(o.getElement(),0,0,24,24);const d=x.getImageData(0,0,24,24).data;
    for(let i=0;i<d.length;i+=4){const k='#'+[d[i],d[i+1],d[i+2]].map(v=>Math.min(255,(v>>5<<5)+16).toString(16).padStart(2,'0')).join('');n.set(k,(n.get(k)||0)+1);}}catch{}});
  return [...n].sort((a,b)=>b[1]-a[1]).slice(0,6).map(e=>e[0]);}
-function renderBg(){if(openP!=='bg')return;const o=colorTarget(),cur=o?o[colorKey(o)]:cv.backgroundColor,h=hex(cur);
- $('colorTitle').textContent=o?'สีของ '+lname(o):'สีพื้นหลัง';$('bgColor').value=h;$('bgHex').value=h.toUpperCase();
+function renderBg(){if(openP!=='bg')return;const im=duoImg(),o=colorTarget(),cur=im?(im.fx?.duo||DUO)[duoSlot]:o?o[colorKey(o)]:cv.backgroundColor,h=hex(cur);
+ $('colorTitle').textContent=im?(duoSlot?'ภาพสองสี: สีไฮไลต์':'ภาพสองสี: สีเงามืด'):o?'สีของ '+lname(o):'สีพื้นหลัง';$('bgColor').value=h;$('bgHex').value=h.toUpperCase();
  const used=[...new Set([cv.backgroundColor,...cv.getObjects().flatMap(x=>[x.fill,x.stroke])].filter(c=>typeof c==='string'&&c).map(hex))].slice(0,12);
  swatches('docSw',used,h,c=>paint(c,true));swatches('bgSw',SWATCH,h,c=>paint(c,true));
  const ph=photoColors();$('photoBox').hidden=!ph.length;swatches('photoSw',ph,h,c=>paint(c,true));
@@ -1140,7 +1153,13 @@ cv.on('after:render',e=>{if(!guides.length||e.ctx!==cv.contextContainer)return;c
 cv.on('mouse:up',()=>{if(guides.length){guides=[];cv.requestRenderAll();}});
 
 /* ===== effects panel: image filters, outline/stroke, corner radius, shadow ===== */
-const FILT={brightness:v=>new fabric.Image.filters.Brightness({brightness:v/100}),contrast:v=>new fabric.Image.filters.Contrast({contrast:v/100}),
+fabric.Image.filters.Duotone=fabric.util.createClass(fabric.Image.filters.BaseFilter,{type:'Duotone',dark:'#2d2a8c',light:'#be3455',
+ applyTo2d(o){const d=o.imageData.data,a=new fabric.Color(this.dark).getSource(),b=new fabric.Color(this.light).getSource();
+  for(let i=0;i<d.length;i+=4){const l=(d[i]*.299+d[i+1]*.587+d[i+2]*.114)/255;for(let c=0;c<3;c++)d[i+c]=a[c]+(b[c]-a[c])*l;}},
+ toObject(){return {...this.callSuper('toObject'),dark:this.dark,light:this.light};}});
+fabric.Image.filters.Duotone.fromObject=fabric.Image.filters.BaseFilter.fromObject;
+const DUO=['#2d2a8c','#be3455'];
+const FILT={duo:v=>new fabric.Image.filters.Duotone({dark:v[0],light:v[1]}),brightness:v=>new fabric.Image.filters.Brightness({brightness:v/100}),contrast:v=>new fabric.Image.filters.Contrast({contrast:v/100}),
  saturation:v=>new fabric.Image.filters.Saturation({saturation:v/100}),blur:v=>new fabric.Image.filters.Blur({blur:v/100}),gray:()=>new fabric.Image.filters.Grayscale()};
 function renderFx(){const o=act(),box=$('fxBody');
  if(!o||o.type==='activeSelection'){box.innerHTML='<h4>เอฟเฟกต์</h4><div class="empty">เลือกองค์ประกอบหนึ่งชิ้นบนผืนงานก่อน</div>';return;}
@@ -1148,7 +1167,10 @@ function renderFx(){const o=act(),box=$('fxBody');
  const chk=(k,l,on)=>`<label class="toggle">${l}<input type="checkbox" data-k="${k}" ${on?'checked':''}></label>`,col=(k,l,v)=>`<label class="toggle">${l}<input type="color" data-k="${k}" value="${hex(v)}"></label>`;
  const f=o.fx||{},sh=o.shadow,rows=[];
  if(o.type==='image')rows.push('<h4>ปรับแต่งรูป</h4>',rng('brightness','ความสว่าง',-100,100,f.brightness||0),rng('contrast','คอนทราสต์',-100,100,f.contrast||0),
-  rng('saturation','ความอิ่มสี',-100,100,f.saturation||0),rng('blur','เบลอ',0,100,f.blur||0),chk('gray','ขาวดำ',f.gray),'<button class="btn out" data-k="reset">ล้างการปรับแต่งรูป</button>');
+  rng('saturation','ความอิ่มสี',-100,100,f.saturation||0),rng('blur','เบลอ',0,100,f.blur||0),chk('gray','ขาวดำ',f.gray),chk('duoOn','ภาพสองสี (Duotone)',f.duo),
+  '<button class="btn out" data-k="reset">ล้างการปรับแต่งรูป</button>','<h4>เส้นขอบรูป</h4>',col('stroke','สีขอบ',o.stroke||'#ffffff'),
+  rng('strokeWidth','ความหนา',0,40,o.stroke?Math.round(o.strokeWidth*o.scaleX):0),
+  rng('rx','มุมโค้ง',0,Math.round(Math.min(o.getScaledWidth(),o.getScaledHeight())/2),Math.round((o.clipPath?.rx||0)*o.scaleX)));
  else if(strokeColored(o))rows.push('<h4>เส้น</h4>',rng('strokeWidth','ความหนา',1,80,Math.round(o.strokeWidth)));
  else if(o.type!=='group')rows.push(`<h4>${isText(o)?'ขอบตัวอักษร':'เส้นขอบ'}</h4>`,col('stroke','สีขอบ',o.stroke||'#0e1318'),rng('strokeWidth','ความหนา',0,isText(o)?20:60,o.stroke?Math.round(o.strokeWidth):0));
  if(o.type==='rect')rows.push(rng('rx','มุมโค้ง',0,Math.round(Math.min(o.width,o.height)/2),Math.round(o.rx||0)));
@@ -1158,8 +1180,11 @@ function renderFx(){const o=act(),box=$('fxBody');
 function applyFx(o,k,v){o.dirty=true;
  if(k in FILT){o.fx={...o.fx,[k]:v};o.filters=Object.entries(o.fx).filter(([,x])=>x).map(([n,x])=>FILT[n](x));o.applyFilters();return;}
  if(k==='reset'){o.fx={};o.filters=[];o.applyFilters();return;}
+ if(k==='strokeWidth'&&o.type==='image')v/=o.scaleX;  // image stroke lives in unscaled image px
  if(k==='strokeWidth')return strokeColored(o)?o.set('strokeWidth',v):o.set({strokeWidth:v,stroke:v?$('fxBody').querySelector('[data-k=stroke]').value:null,paintFirst:'stroke'});
  if(k==='stroke')return o.set({stroke:v,strokeWidth:o.stroke?o.strokeWidth:Math.max(2,Math.round(Math.min(o.width,o.height)/60)),paintFirst:'stroke'});
+ if(k==='duoOn')return applyFx(o,'duo',v?[...DUO]:0);
+ if(k==='rx'&&o.type==='image'){const r=v/o.scaleX;return o.set('clipPath',r?new fabric.Rect({width:o.width,height:o.height,rx:r,ry:r,originX:'center',originY:'center'}):null);}  // clipPath is in unscaled image px
  if(k==='rx')return o.set({rx:v,ry:v});
  if(k==='shadow')return o.set('shadow',v?new fabric.Shadow({color:'rgba(0,0,0,0.35)',blur:20,offsetX:8,offsetY:8}):null);
  if(k==='sblur')o.shadow.blur=v;if(k==='soff')o.shadow.offsetX=o.shadow.offsetY=Math.round(v/Math.SQRT2);
@@ -1167,7 +1192,7 @@ function applyFx(o,k,v){o.dirty=true;
 const fxVal=el=>el.type==='checkbox'?el.checked:el.type==='range'?+el.value:el.value;
 $('fxBody').oninput=e=>{const el=e.target,k=el.dataset.k,o=act();if(!k||!o)return;applyFx(o,k,fxVal(el));
  const out=el.closest('.fxr')?.querySelector('output');if(out)out.textContent=el.value;cv.requestRenderAll();};
-$('fxBody').onchange=e=>{const k=e.target.dataset.k;if(!k||!act())return;save();if(['shadow','stroke','strokeWidth'].includes(k))renderFx();};
+$('fxBody').onchange=e=>{const k=e.target.dataset.k;if(!k||!act())return;save();if(['shadow','stroke','strokeWidth','duoOn'].includes(k)){renderFx();onSelColor();}};
 $('fxBody').onclick=e=>{if(e.target.dataset.k!=='reset'||!act())return;applyFx(act(),'reset');cv.requestRenderAll();save();renderFx();};
 
 /* ===== file menu: open / save an editable design file (.json) ===== */
