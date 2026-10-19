@@ -12,6 +12,7 @@ import core
 
 LIB = core.library_dir()
 FONTS = LIB / "fonts"
+DESIGNS = LIB / "designs"
 STATE = LIB / ".state.json"
 PROFILE = Path.home() / ".pincut"  # browser profile: keeps the Pinterest login between runs
 UI = Path(__file__).parent / "ui" / "index.html"
@@ -155,10 +156,29 @@ class Api:
     def save_font(self, name, data):
         return core.save_data_url(FONTS, name, data, core.FONT_EXT).stem
 
+    # ----- designs: the "ล่าสุด" history on the home screen (Downloads/PinCut/designs) -----
+    def list_designs(self):
+        return core.list_designs(DESIGNS)
+
+    def load_design(self, design_id):
+        return core.load_design(DESIGNS, design_id)
+
+    def save_design(self, doc):
+        return core.save_design(DESIGNS, doc)
+
+    def update_design(self, design_id, name=None, starred=None):
+        return core.update_design(DESIGNS, design_id, name, starred)
+
+    def trash_design(self, design_id):
+        core.trash_design(DESIGNS, design_id)
+
+    def restore_design(self, design_id):
+        return core.restore_design(DESIGNS, design_id)
+
     # ----- export -----
-    def save_export(self, data, ext):
-        ext = {"png": "png", "jpg": "jpg", "pdf": "pdf"}[ext]
-        path = save_dialog(f"design.{ext}")
+    def save_export(self, data, ext, name="design"):
+        ext = {"png": "png", "jpg": "jpg", "pdf": "pdf", "svg": "svg", "json": "json"}[ext]
+        path = save_dialog(core.export_name(name, ext))
         if path:
             Path(path).write_bytes(core.from_data_url(data))
         return path

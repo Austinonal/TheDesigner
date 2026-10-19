@@ -27,16 +27,68 @@ svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke
 .hero h1{margin:0 0 28px;font-size:clamp(28px,4vw,40px);letter-spacing:-.01em;font-weight:500;background:linear-gradient(90deg,var(--acc),#c2410c);-webkit-background-clip:text;color:transparent}
 .searchbar{max-width:760px;margin:auto;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 20px;box-shadow:0 4px 20px #0000000d;color:var(--mut)}
 .searchbar input{border:0;outline:0;font:inherit;flex:1;font-size:15px}
-.cats{display:flex;justify-content:center;gap:34px;margin:40px 0 10px}
-.cat{display:flex;flex-direction:column;align-items:center;gap:10px;font-size:14px}
+.cats{display:flex;justify-content:center;gap:12px;margin:40px auto 10px;max-width:1100px;overflow-x:auto;padding:4px 8px}
+.cat{width:92px;flex:none;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:13.5px;line-height:1.3;text-align:center;color:#3a4048}
 .cat .circ{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;color:#fff;transition:transform .15s}
 .cat:hover .circ{transform:translateY(-3px)}.cat svg{width:26px;height:26px}
-.recent{padding:10px 40px 40px}.recent h2{font-weight:500;font-size:20px;margin:24px 0 16px}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
-.card .pv{height:170px;background:var(--bg);border-radius:var(--r);display:grid;place-items:center;overflow:hidden}
-.card .pv img{max-height:170px;max-width:85%;box-shadow:0 2px 6px #0002}
-.card b{display:block;font-weight:500;font-size:14px;margin-top:10px}.card small{color:var(--mut);font-size:12px}
-.empty{color:var(--mut);font-size:14px;grid-column:1/-1}
+.cat .circ.ghost{background:#fff;color:var(--txt);border:1px solid var(--line)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* recent designs (history) */
+.recent{padding:10px 40px 96px}
+.rhead{display:flex;align-items:center;gap:8px;margin:24px 0 16px;flex-wrap:wrap}
+.rhead h2{font-weight:500;font-size:22px;margin:0 auto 0 0}
+.chip{height:40px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;display:flex;align-items:center;gap:6px;font-size:14px}
+.chip:hover{background:var(--bg)}.chip svg{width:18px;height:18px}
+.chip[aria-expanded=true],.chip.on{border-color:var(--acc);background:var(--accSoft);color:var(--acc)}
+.ibtn{width:40px;height:40px;border-radius:10px;display:grid;place-items:center}.ibtn:hover{background:#0000000d}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px}
+.card{position:relative;cursor:pointer;border-radius:var(--r)}
+.card .pv{height:170px;background:var(--bg);border-radius:var(--r);display:grid;place-items:center;overflow:hidden;border:2px solid transparent;transition:background .15s}
+.card:hover .pv{background:#e8eaed}.card.sel .pv{border-color:var(--acc);background:var(--accSoft)}
+.card .pv img{max-height:140px;max-width:85%;object-fit:contain;box-shadow:0 2px 6px #0002;background:#fff}
+.card .nm{display:block;font-weight:500;font-size:14px;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card small,.lrow small{color:var(--mut);font-size:12.5px;display:flex;align-items:center;gap:6px}
+.kdot{width:16px;height:16px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;flex:none}.kdot svg{width:10px;height:10px;stroke-width:2.4}
+.card .ck{position:absolute;top:8px;left:8px}
+.ck{width:24px;height:24px;border-radius:6px;background:#fff;border:1.5px solid #9aa0a8;display:grid;place-items:center;opacity:0;transition:opacity .12s}
+.ck svg{width:16px;height:16px;stroke:#fff;stroke-width:2.6;opacity:0}
+.ck[aria-checked=true]{background:var(--acc);border-color:var(--acc)}.ck[aria-checked=true] svg{opacity:1}
+.card .acts{position:absolute;top:8px;right:8px;display:flex;gap:4px}
+.acts button{width:32px;height:32px;border-radius:8px;background:#fffffff2;display:grid;place-items:center;box-shadow:0 1px 4px #0002;opacity:0;transition:opacity .12s}
+.acts button svg{width:18px;height:18px}
+.card:hover .ck,.card:hover .acts button,.lrow:hover .ck,.lrow:hover .acts button,.selecting .ck,.ck:focus-visible,.acts button:focus-visible,.acts button[aria-expanded=true],.acts .star.on{opacity:1}
+.star.on svg{fill:#f5b301;stroke:#f5b301}
+.empty{color:var(--mut);font-size:14px;grid-column:1/-1;padding:28px;text-align:center;border:1px dashed #cfd3d8;border-radius:var(--r);background:#ffffffb3}
+/* list view */
+.cards.list{display:block}
+.lhead,.lrow{display:grid;grid-template-columns:40px minmax(0,1fr) 180px 160px 96px;align-items:center;gap:12px;padding:0 12px}
+.lhead{font-size:13px;color:var(--mut);height:36px;border-bottom:1px solid var(--line)}
+.lrow{height:64px;border-radius:10px;cursor:pointer}.lrow:hover{background:#00000008}.lrow.sel{background:var(--accSoft)}
+.lrow .nmc{display:flex;align-items:center;gap:12px;min-width:0}
+.lrow .tn{width:52px;height:40px;border-radius:6px;background:var(--bg);display:grid;place-items:center;flex:none;overflow:hidden}
+.lrow .tn img{max-width:48px;max-height:36px;box-shadow:0 1px 3px #0002}
+.lrow .nm{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow .c{font-size:13.5px;color:#3a4048;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow .acts{display:flex;gap:4px;justify-content:flex-end}.lrow .acts button{box-shadow:none;background:none}.lrow .acts button:hover{background:#0000000f}
+@media (max-width:760px){.recent{padding:10px 16px 96px}.lhead,.lrow{grid-template-columns:32px minmax(0,1fr) 88px}.lhead>:nth-child(3),.lrow>:nth-child(3),.lhead>:nth-child(4),.lrow>:nth-child(4){display:none}}
+/* bulk-selection bar */
+.selbar{position:fixed;left:50%;bottom:20px;transform:translate(-50%,24px);opacity:0;pointer-events:none;display:flex;align-items:center;gap:4px;background:#fff;border-radius:14px;padding:6px 8px;box-shadow:0 8px 30px #0000002e;z-index:30;transition:opacity .15s,transform .15s;min-width:min(520px,calc(100vw - 32px))}
+.selbar.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.selbar span{margin-right:auto;padding:0 8px;font-size:14px}.selbar button{height:40px;padding:0 12px;border-radius:10px;display:flex;align-items:center;gap:6px;font-size:14px}
+.selbar button:hover{background:var(--bg)}.selbar .danger{color:#c62828}.selbar svg{width:19px;height:19px}
+/* details drawer */
+.drawer{position:fixed;top:8px;right:8px;bottom:8px;width:min(360px,calc(100vw - 16px));background:#fff;border-radius:16px;box-shadow:-6px 0 30px #0000002e;z-index:35;display:flex;flex-direction:column;transform:translateX(110%);transition:transform .2s ease-out;visibility:hidden}
+.drawer.on{transform:none;visibility:visible}
+.drawer header{display:flex;align-items:center;gap:8px;padding:14px 12px 10px 20px}.drawer header b{flex:1;font-weight:500;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drawer .dbody{overflow:auto;padding:0 20px 20px;display:flex;flex-direction:column;gap:16px}
+.drawer .dpv{height:200px;background:var(--bg);border-radius:var(--r);display:grid;place-items:center}.drawer .dpv img{max-width:86%;max-height:176px;box-shadow:0 2px 6px #0002}
+.drawer dl{margin:0;border:1px solid var(--line);border-radius:var(--r);padding:6px 16px}
+.drawer dl div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;font-size:14px}.drawer dt{color:var(--mut)}.drawer dd{margin:0;text-align:right}
+.drawer .dacts{display:flex;gap:8px}.drawer .dacts .btn{flex:1;display:flex;justify-content:center;gap:8px;align-items:center}
+.fmenu .rn{display:flex;gap:8px;align-items:center}.fmenu .rn input{flex:1;font:inherit;font-size:15px;font-weight:500;border:1px solid var(--acc);border-radius:8px;padding:4px 8px;min-width:0}
+.fmenu .pen{width:28px;height:28px;padding:0;justify-content:center;flex:none;color:var(--mut)}.fmenu .pen svg{width:16px;height:16px}
+.fmenu .on svg{fill:#f5b301;stroke:#f5b301}.fmenu button[aria-checked=true]::after{content:'✓';margin-left:auto;color:var(--acc)}
 .acctLbl{max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* ---------- SIZE (modal-ish page) ---------- */
 #size{flex-direction:column;padding:28px 40px;overflow:auto}
@@ -56,7 +108,9 @@ input.f,select.f{font:inherit;padding:10px 12px;font-size:15px;border:1px solid 
 .top{height:56px;flex:none;display:flex;align-items:center;gap:4px;padding:0 10px;background:linear-gradient(90deg,var(--acc),var(--acc2));color:#fff}
 .top button{padding:7px 12px;border-radius:8px;font-weight:500;font-size:14px;display:flex;align-items:center;gap:6px}
 .top button:hover{background:#ffffff2b}.top .sep{width:1px;height:24px;background:#ffffff66;margin:0 6px}
-.top .title{margin-left:auto;margin-right:12px;opacity:.85;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
+.top .title{margin-left:auto;margin-right:12px;font:inherit;font-size:14px;color:#fff;background:none;border:1px solid transparent;border-radius:8px;padding:6px 10px;width:min(320px,34vw);text-align:right;text-overflow:ellipsis}
+.top .title:hover{border-color:#ffffff80}.top .title:focus{outline:0;background:#fff;color:var(--txt);text-align:left}
+.top .saved.pending{opacity:.55}.top .saved.err{color:#fff3a6}
 /* login modal */
 .modal{position:fixed;inset:0;background:#0e131866;display:none;place-items:center;z-index:50}.modal.on{display:grid}
 .mcard{width:min(420px,calc(100vw - 32px));background:#fff;border-radius:20px;padding:32px 28px 24px;text-align:center;box-shadow:0 20px 60px #0004;position:relative}
@@ -92,12 +146,13 @@ input.f,select.f{font:inherit;padding:10px 12px;font-size:15px;border:1px solid 
 .it .more{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:8px;background:#fffffff2;display:grid;place-items:center;opacity:0;box-shadow:0 1px 4px #0003}
 .it:hover .more,.it .more:focus-visible,.it .more[aria-expanded=true]{opacity:1}.it .more svg{width:18px;height:18px}
 .fmenu{position:fixed;z-index:40;width:270px;background:#fff;border-radius:14px;padding:6px;box-shadow:0 8px 30px #00000033;display:flex;flex-direction:column}
-.fmenu .fh{padding:10px 12px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}.fmenu .fh b{display:block;font-weight:500;font-size:15px;word-break:break-all}
+.fmenu[hidden]{display:none}.fmenu .fh{padding:10px 12px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}.fmenu .fh b{display:block;font-weight:500;font-size:15px;word-break:break-all}
 .fmenu .fh small{color:var(--mut);font-size:12px}.fmenu button{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:8px;font-size:14px;text-align:left}
 .fmenu button:hover{background:var(--bg)}.fmenu button svg{width:20px;height:20px}.fmenu .danger{color:#c62828}
 .fmenu .fdet{padding:2px 12px 10px 44px;font-size:13px;color:var(--mut);line-height:1.6}.fmenu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
 .steps{margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:var(--mut)}.steps b{color:var(--txt);font-weight:500}
-.toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:#1d2127;color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}.toast.on{opacity:1}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#1d2127;color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;display:flex;align-items:center;gap:16px;max-width:calc(100vw - 32px)}
+.toast.on{opacity:1}.toast.on.act{pointer-events:auto}.toast button{font-weight:500;padding:4px 10px;border-radius:6px;background:#ffffff26;white-space:nowrap}.toast button:hover{background:#ffffff40}
 .ctxbar label{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:500;padding:0 8px}.ctxbar label input{width:90px}
 .panel h4{margin:6px 0 0;font-weight:500;font-size:14px;display:flex;justify-content:space-between}
 .tabs{display:flex;gap:22px;border-bottom:1px solid var(--line)}.tabs span{padding:8px 2px;font-size:15px}
@@ -106,6 +161,22 @@ input.f,select.f{font:inherit;padding:10px 12px;font-size:15px;border:1px solid 
 .it img{width:100%;display:block}.it:hover img{filter:brightness(.92)}
 .it .get{position:absolute;right:6px;bottom:6px;background:#fff;border-radius:8px;padding:4px 10px;font-size:12px;opacity:0;box-shadow:0 1px 4px #0003}.it:hover .get{opacity:1}
 .hint{font-size:12px;color:var(--mut);margin-top:-8px}
+.shapes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.shapes button{aspect-ratio:1;border-radius:10px;background:var(--bg);display:grid;place-items:center}
+.shapes button:hover{background:#e7e9ec}.shapes svg{width:34px;height:34px}
+.swatches{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.swatches button{aspect-ratio:1;border-radius:50%;border:1px solid #0000001f}
+.swatches button.on{outline:2px solid var(--acc);outline-offset:2px}
+.fxr{display:flex;flex-direction:column;gap:6px;font-size:14px}.fxr span{display:flex;justify-content:space-between}.fxr output{color:var(--mut)}.fxr input{width:100%}
+.toggle input[type=color]{width:40px;height:30px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.lyr{display:flex;align-items:center;gap:2px;border-radius:10px;padding:2px 4px}.lyr:hover{background:var(--bg)}.lyr.on{background:var(--accSoft)}
+.lyr .ln{flex:1;min-width:0;text-align:left;padding:8px;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.lyr.hid .ln{opacity:.45}
+.lyr button:not(.ln){width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--mut)}.lyr button:not(.ln):hover{background:#0000000f;color:var(--txt)}
+.lyr svg{width:17px;height:17px}.lyr input{flex:1;min-width:0;font:inherit;font-size:14px;border:1px solid var(--acc);border-radius:8px;padding:6px 8px}
+.tpls{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}.panel .tpls{grid-template-columns:1fr 1fr;gap:10px}
+.tpl{text-align:left}.tpl .pv{height:150px;background:var(--bg);border-radius:12px;display:grid;place-items:center;transition:background .15s}.panel .tpl .pv{height:120px}.panel .tpl img{max-height:104px}
+.tpl:hover .pv{background:#e8eaed}.tpl img{max-width:86%;max-height:130px;box-shadow:0 2px 6px #0002}
+.tpl b{display:block;font-weight:500;font-size:14px;margin-top:8px}.tpl small{color:var(--mut);font-size:12px}
+.menu .alignrow{display:flex;gap:2px}.menu .alignrow button{flex:1;justify-content:center;padding:8px 0}
+#sFill{width:34px;height:30px;padding:2px;border:1px solid var(--line);border-radius:8px}
 .stage{flex:1;background:var(--bg);position:relative;overflow:auto}
 .stagein{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px 40px}
 .pagetools{align-self:stretch;display:flex;justify-content:center}
@@ -165,6 +236,32 @@ input[type=range]{accent-color:var(--acc);width:150px}
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></symbol>
   <symbol id="i-img" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="M20 15l-5-5-11 10"/></symbol>
   <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M9 12h6M9 16h6"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><path d="M8 4v16M4 8l4-4 4 4M16 20V4M12 16l4 4 4-4"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.5M4 12h.5M4 18h.5"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></symbol>
+  <symbol id="i-open" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-tick" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></symbol>
+  <symbol id="i-insta" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.5"/><path d="M16.5 7.5v.01"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4"/></symbol>
+  <symbol id="i-brush" viewBox="0 0 24 24"><path d="M18 3l3 3-9 9-3-3z"/><path d="M9 12c-3 0-5 2-5 5 0 1-1 2-2 2 2 1 6 1 8-1s1-5-1-6z"/></symbol>
+  <symbol id="i-bg" viewBox="0 0 24 24"><path d="M5 11l7-7 7 7-7 7z"/><path d="M19 15s2 2.5 2 4a2 2 0 01-4 0c0-1.5 2-4 2-4z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A10 10 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 3.8M6.5 6.6C3.8 8.3 2 12 2 12s4 7 10 7c1.6 0 3-.4 4.3-1"/></symbol>
+  <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 017.5-2"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-dn" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+  <symbol id="i-al-l" viewBox="0 0 24 24"><path d="M4 3v18M8 7h12v4H8zM8 14h7v4H8z"/></symbol>
+  <symbol id="i-al-c" viewBox="0 0 24 24"><path d="M12 3v18M6 7h12v4H6zM8.5 14h7v4h-7z"/></symbol>
+  <symbol id="i-al-r" viewBox="0 0 24 24"><path d="M20 3v18M4 7h12v4H4zM9 14h7v4H9z"/></symbol>
+  <symbol id="i-al-t" viewBox="0 0 24 24"><path d="M3 4h18M7 8h4v12H7zM14 8h4v7h-4z"/></symbol>
+  <symbol id="i-al-m" viewBox="0 0 24 24"><path d="M3 12h18M7 6h4v12H7zM14 8.5h4v7h-4z"/></symbol>
+  <symbol id="i-al-b" viewBox="0 0 24 24"><path d="M3 20h18M7 4h4v12H7zM14 9h4v7h-4z"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M11 8h2a2.5 2.5 0 010 5h-2M11 8l-2 10"/></symbol>
 </svg>
 
@@ -180,14 +277,35 @@ input[type=range]{accent-color:var(--acc);width:150px}
     <div class="hero">
       <h1>วันนี้คุณจะดีไซน์อะไร?</h1>
       <label class="searchbar"><svg><use href="#i-search"/></svg><input id="homeQ" placeholder="ค้นหารูปใน Pinterest แล้วไปที่ผืนงาน"></label>
-      <div class="cats">
-        <button class="cat" onclick="go('size')"><span class="circ" style="background:#ef5a4c"><svg><use href="#i-resize"/></svg></span>กำหนดขนาดเอง</button>
-        <button class="cat" onclick="homeUpload.click()"><span class="circ" style="background:#ff9f5a"><svg><use href="#i-cloud"/></svg></span>อัพโหลด</button>
-      </div>
+      <div class="cats" id="cats"></div>
     </div>
-    <div class="recent"><h2>ล่าสุด</h2><div class="cards" id="recent"><div class="empty">ยังไม่มีดีไซน์ — ดาวน์โหลดงานแล้วจะขึ้นตรงนี้</div></div></div>
+    <section class="recent" aria-labelledby="tplH" style="padding-bottom:0">
+      <div class="rhead"><h2 id="tplH">เริ่มจากเทมเพลต</h2></div>
+      <div class="tpls" id="homeTpl"></div>
+    </section>
+    <section class="recent" aria-labelledby="recentH">
+      <div class="rhead">
+        <h2 id="recentH">ล่าสุด</h2>
+        <button class="chip" id="fType" aria-haspopup="menu" aria-expanded="false"><span>ประเภท</span><svg><use href="#i-chev"/></svg></button>
+        <button class="chip" id="fStar" aria-pressed="false"><svg><use href="#i-star"/></svg>ติดดาว</button>
+        <button class="ibtn" id="sortBtn" aria-haspopup="menu" aria-expanded="false" title="เรียงลำดับ" aria-label="เรียงลำดับ"><svg><use href="#i-sort"/></svg></button>
+        <button class="ibtn" id="viewBtn"><svg><use href="#i-list"/></svg></button>
+      </div>
+      <div class="cards" id="recent" role="list"></div>
+    </section>
   </div>
   <input id="homeUpload" type="file" accept="image/*" hidden>
+  <div class="selbar" id="selbar" role="toolbar" aria-label="รายการที่เลือก">
+    <button onclick="clearSel()" aria-label="ยกเลิกการเลือก"><svg><use href="#i-x"/></svg></button>
+    <span id="selN" aria-live="polite"></span>
+    <button onclick="bulk('dl')"><svg><use href="#i-down"/></svg>ดาวน์โหลด</button>
+    <button onclick="bulk('dup')"><svg><use href="#i-copy"/></svg>ทำสำเนา</button>
+    <button onclick="bulk('trash')" class="danger"><svg><use href="#i-trash"/></svg>ถังขยะ</button>
+  </div>
+  <aside class="drawer" id="drawer" aria-labelledby="dName" aria-hidden="true">
+    <header><b id="dName"></b><button class="ibtn" onclick="closeDrawer()" aria-label="ปิด"><svg><use href="#i-x"/></svg></button></header>
+    <div class="dbody" id="dBody"></div>
+  </aside>
 </section>
 
 <!-- ============ 2) SIZE ============ -->
@@ -207,22 +325,27 @@ input[type=range]{accent-color:var(--acc);width:150px}
 <section id="editor" class="screen">
   <div class="top">
     <button onclick="go('home')"><svg><use href="#i-home"/></svg></button>
-    <button>ไฟล์</button>
+    <button id="fileBtn" aria-haspopup="menu" aria-expanded="false">ไฟล์</button>
+    <input id="jsonFile" type="file" accept=".json,application/json" hidden>
     <button onclick="go('size')">ปรับขนาด</button>
     <span class="sep"></span>
     <button onclick="undo()" title="Ctrl+Z"><svg><use href="#i-undo"/></svg></button>
     <button onclick="redo()" title="Ctrl+Y"><svg><use href="#i-redo"/></svg></button>
     <span class="sep"></span>
-    <button title="บันทึกแล้ว"><svg><use href="#i-check"/></svg></button>
-    <span class="title" id="docTitle">ดีไซน์ที่ไม่มีชื่อ</span>
+    <button class="saved" id="saveState" title="บันทึกแล้ว" aria-label="บันทึกแล้ว"><svg><use href="#i-check"/></svg></button>
+    <input class="title" id="docTitle" aria-label="ชื่อดีไซน์" maxlength="120" value="ดีไซน์ที่ไม่มีชื่อ">
     <button class="acct" id="acctTop" onclick="acctClick()" title="บัญชี Pinterest"><svg><use href="#i-pin"/></svg></button>
     <button class="share" onclick="sheet.classList.toggle('on')"><svg><use href="#i-down"/></svg>ดาวน์โหลด</button>
   </div>
   <div class="body">
     <nav class="rail">
+      <button data-p="tpl"><span class="ico"><svg><use href="#i-temp"/></svg></span>เทมเพลต</button>
       <button data-p="pin"><span class="ico"><svg><use href="#i-shapes"/></svg></span>องค์ประกอบ</button>
       <button data-p="text"><span class="ico"><svg><use href="#i-text"/></svg></span>ข้อความ</button>
+      <button data-p="draw"><span class="ico"><svg><use href="#i-brush"/></svg></span>วาด</button>
+      <button data-p="bg"><span class="ico"><svg><use href="#i-bg"/></svg></span>พื้นหลัง</button>
       <button data-p="up"><span class="ico"><svg><use href="#i-cloud"/></svg></span>อัพโหลด</button>
+      <button data-p="layers"><span class="ico"><svg><use href="#i-layers"/></svg></span>เลเยอร์</button>
     </nav>
     <aside class="panel" id="panel-text" hidden>
       <label class="pill"><svg><use href="#i-search"/></svg><input id="fontQ" placeholder="ค้นหาฟอนต์"></label>
@@ -239,7 +362,43 @@ input[type=range]{accent-color:var(--acc);width:150px}
       <div class="hint">เลือกข้อความบนผืนงานแล้วคลิกฟอนต์เพื่อเปลี่ยน</div>
       <div class="fontlist" id="allFonts"></div>
     </aside>
+    <aside class="panel" id="panel-tpl" hidden>
+      <h4>เทมเพลต</h4>
+      <div class="hint">คลิกเพื่อใช้กับหน้านี้ — ขนาดปรับตามหน้าอัตโนมัติ กด Ctrl+Z เพื่อย้อนกลับ</div>
+      <div class="tpls" id="edTpl"></div>
+    </aside>
+    <aside class="panel" id="panel-draw" hidden>
+      <h4>ปากกา</h4>
+      <div class="hint">ลากบนผืนงานเพื่อวาด ปิดแผงนี้เพื่อกลับไปเลือกและย้ายองค์ประกอบ</div>
+      <label class="toggle">สีปากกา<input type="color" id="penColor" value="#ef5a4c"></label>
+      <div class="swatches" id="penSw"></div>
+      <label class="fxr"><span>ขนาด<output id="penOut">12</output></span><input type="range" id="penSize" min="1" max="120" value="12"></label>
+    </aside>
+    <aside class="panel" id="panel-bg" hidden>
+      <h4>สีพื้นหลังของหน้า</h4>
+      <div class="swatches" id="bgSw"></div>
+      <label class="toggle">เลือกสีเอง<input type="color" id="bgColor" value="#ffffff"></label>
+    </aside>
+    <aside class="panel" id="panel-layers" hidden>
+      <h4>เลเยอร์</h4>
+      <div class="hint">บนสุดอยู่หน้าสุด · ดับเบิลคลิกชื่อเพื่อเปลี่ยนชื่อ</div>
+      <div id="layers"></div>
+    </aside>
+    <aside class="panel" id="panel-fx" hidden>
+      <div id="fxBody"></div>
+    </aside>
     <aside class="panel" id="panel-pin" hidden>
+      <h4>รูปทรงและเส้น</h4>
+      <div class="shapes">
+        <button onclick="addShape('rect')" aria-label="สี่เหลี่ยม" title="สี่เหลี่ยม"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" fill="#ef5a4c" stroke="none"/></svg></button>
+        <button onclick="addShape('round')" aria-label="สี่เหลี่ยมมุมมน" title="สี่เหลี่ยมมุมมน"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="#ff9f5a" stroke="none"/></svg></button>
+        <button onclick="addShape('circle')" aria-label="วงกลม" title="วงกลม"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#a855f7" stroke="none"/></svg></button>
+        <button onclick="addShape('tri')" aria-label="สามเหลี่ยม" title="สามเหลี่ยม"><svg viewBox="0 0 24 24"><path d="M12 4l9 16H3z" fill="#0d9488" stroke="none"/></svg></button>
+        <button onclick="addShape('star')" aria-label="ดาว" title="ดาว"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" fill="#f5b301" stroke="none"/></svg></button>
+        <button onclick="addShape('line')" aria-label="เส้น" title="เส้น"><svg viewBox="0 0 24 24"><path d="M3 12h18" stroke-width="2.2"/></svg></button>
+        <button onclick="addShape('arrow')" aria-label="ลูกศร" title="ลูกศร"><svg viewBox="0 0 24 24"><path d="M3 12h18M15 6l6 6-6 6" stroke-width="2.2"/></svg></button>
+      </div>
+      <h4>รูปจาก Pinterest</h4>
       <label class="pill"><svg><use href="#i-pin"/></svg><input id="q" placeholder="ค้นหาใน Pinterest"></label>
       <h4>วิธีใช้</h4>
       <ol class="steps">
@@ -260,10 +419,15 @@ input[type=range]{accent-color:var(--acc);width:150px}
     <main class="stage" id="stage">
       <button class="collapse" id="collapse" onclick="openPanel(null)" title="ปิดแผง">‹</button>
       <div class="ctxbar" id="ctxbar">
-        <button onclick="cutBg()">ตัวลบแบ็คกราวน์</button>
+        <button class="imgOnly" onclick="cutBg()">ตัวลบแบ็คกราวน์</button>
+        <button class="imgOnly" onclick="openPanel('fx')">ปรับแต่งรูป</button>
+        <input class="fillOnly" type="color" id="sFill" title="สี" aria-label="สี">
+        <button class="multiOnly" onclick="groupSel()">จัดกลุ่ม</button>
+        <button class="groupOnly" onclick="ungroupSel()">ยกเลิกกลุ่ม</button>
         <span class="sep"></span>
         <button onclick="flip()">พลิก</button>
         <label>ความโปร่งใส<input id="op" type="range" min="0" max="100"></label>
+        <button class="notImg" onclick="openPanel('fx')">เอฟเฟกต์</button>
         <button onclick="toggleMenu()">ตำแหน่ง</button>
       </div>
       <div class="ctxbar tbar" id="tbar">
@@ -276,6 +440,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
         <button class="tg" id="tU" onclick="toggleT('underline',true,false)"><u>U</u></button>
         <span class="sep"></span>
         <button onclick="cycleAlign()" id="tAlign">ชิดซ้าย</button>
+        <button onclick="openPanel('fx')">เอฟเฟกต์</button>
         <button onclick="toggleMenu()">ตำแหน่ง</button>
       </div>
       <div class="float" id="float">
@@ -295,6 +460,16 @@ input[type=range]{accent-color:var(--acc);width:150px}
         <button onclick="layer(-1)">เลื่อนไปข้างหลัง</button>
         <button onclick="layer('back')">ส่งไปไว้หลังสุด</button>
         <button onclick="center()">จัดกึ่งกลางหน้า</button>
+        <div class="alignrow" role="group" aria-label="จัดแนว (หลายชิ้น = เทียบกันเอง, ชิ้นเดียว = เทียบหน้า)">
+          <button onclick="align('l')" title="ชิดซ้าย" aria-label="ชิดซ้าย"><svg><use href="#i-al-l"/></svg></button>
+          <button onclick="align('c')" title="กึ่งกลางแนวนอน" aria-label="กึ่งกลางแนวนอน"><svg><use href="#i-al-c"/></svg></button>
+          <button onclick="align('r')" title="ชิดขวา" aria-label="ชิดขวา"><svg><use href="#i-al-r"/></svg></button>
+          <button onclick="align('t')" title="ชิดบน" aria-label="ชิดบน"><svg><use href="#i-al-t"/></svg></button>
+          <button onclick="align('m')" title="กึ่งกลางแนวตั้ง" aria-label="กึ่งกลางแนวตั้ง"><svg><use href="#i-al-m"/></svg></button>
+          <button onclick="align('b')" title="ชิดล่าง" aria-label="ชิดล่าง"><svg><use href="#i-al-b"/></svg></button>
+        </div>
+        <button onclick="groupSel()">จัดกลุ่ม<kbd>Ctrl+G</kbd></button>
+        <button onclick="ungroupSel()">ยกเลิกกลุ่ม<kbd>Ctrl+⇧+G</kbd></button>
         <hr>
         <button onclick="lock()"><svg><use href="#i-lock"/></svg>ล็อก</button>
       </div>
@@ -322,6 +497,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
     <div class="fmtlist" id="fmtlist">
       <button class="fmt" data-f="jpg"><svg><use href="#i-img"/></svg><span>JPG<small>เหมาะสำหรับการแชร์</small></span></button>
       <button class="fmt" data-f="png"><svg><use href="#i-img"/></svg><span>PNG<small>เหมาะสำหรับรูปภาพและภาพวาดที่มีรายละเอียดซับซ้อน</small></span></button>
+      <button class="fmt" data-f="svg"><svg><use href="#i-shapes"/></svg><span>SVG<small>ภาพเวกเตอร์ ขยายได้ไม่แตก แก้ต่อในโปรแกรมอื่นได้</small></span></button>
       <button class="fmt on" data-f="pdf"><svg><use href="#i-doc"/></svg><span>PDF<small>เหมาะสำหรับเอกสารและการพิมพ์</small></span></button>
     </div>
     <div class="lbl">ค่าที่ตั้งไว้ล่วงหน้า</div>
@@ -331,7 +507,7 @@ input[type=range]{accent-color:var(--acc);width:150px}
   </div>
 </section>
 
-<div class="toast" id="toast" role="status"></div>
+<div class="toast" id="toast" role="status"><span></span><button hidden></button></div>
 <div class="fmenu" id="fmenu" role="menu" hidden></div>
 <div class="modal" id="loginModal" onclick="if(event.target===this)closeLogin()">
   <div class="mcard" role="dialog" aria-modal="true" aria-labelledby="mTitle">
@@ -346,7 +522,9 @@ input[type=range]{accent-color:var(--acc);width:150px}
 
 <script>
 const $=id=>document.getElementById(id);
-function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='editor')requestAnimationFrame(fit);}
+function go(id){const leaving=$('editor').classList.contains('on')&&id!=='editor';
+ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));if(id==='editor')requestAnimationFrame(fit);
+ if(leaving)flushSave().then(()=>id==='home'&&renderRecent());else if(id==='home')renderRecent();}
 
 /* ===== sizes ===== */
 const PRESETS=[["เอกสาร (ไซส์ US แนวตั้ง)",8.5,11,"in"],["สตอรี่ของคุณ",1080,1920,"px"],["โพสต์ Instagram (4:5)",1080,1350,"px"],
@@ -355,14 +533,39 @@ const UL={px:'px',in:'นิ้ว',cm:'ซม.',mm:'มม.'};
 const toPx=(v,u)=>Math.round(v*{px:1,in:96,cm:96/2.54,mm:96/25.4}[u]);
 $('presets').innerHTML=PRESETS.map((p,i)=>{const r=p[1]/p[2],tw=r>1?150:150*r,th=r>1?150/r:150;
  return `<button class="preset" onclick="pickPreset(${i})"><div class="pv"><div style="width:${tw}px;height:${th}px"></div></div><b>${p[0]}</b><small>${p[1]} × ${p[2]} ${UL[p[3]]}</small></button>`}).join('');
-function pickPreset(i){const p=PRESETS[i];newDoc(toPx(p[1],p[3]),toPx(p[2],p[3]),p[0]);}
-function createFromInputs(){newDoc(toPx(+w.value,unit.value),toPx(+h.value,unit.value),`${w.value}×${h.value} ${UL[unit.value]}`);}
+const sizeTxt=p=>`${p[1]} × ${p[2]} ${UL[p[3]]}`;
+function pickPreset(i){const p=PRESETS[i];newDoc(toPx(p[1],p[3]),toPx(p[2],p[3]),p[0],sizeTxt(p));}
+function createFromInputs(){newDoc(toPx(+w.value,unit.value),toPx(+h.value,unit.value),'กำหนดขนาดเอง',sizeTxt([0,w.value,h.value,unit.value]));}
 
 /* ===== canvas ===== */
 fabric.Object.prototype.set({cornerStyle:'circle',cornerColor:'#fff',cornerStrokeColor:'#ef5a4c',borderColor:'#ef5a4c',transparentCorners:false,cornerSize:12,padding:0});
 const cv=new fabric.Canvas('c',{backgroundColor:'#fff',preserveObjectStacking:true});
-let docW=1080,docH=1080,zoom=.5,docName='';
-function newDoc(W,H,name){docW=W;docH=H;docName=name;cv.clear();cv.backgroundColor='#fff';$('docTitle').textContent='ดีไซน์ที่ไม่มีชื่อ - '+name;hist=[];hi=-1;save();go('editor');}
+fabric.filterBackend=new fabric.Canvas2dFilterBackend();  // WebGL backend caps images at 2048px; 2d is slower but takes any size
+const PROPS=['pincutId','name','fx','lockMovementX','lockMovementY','lockRotation','lockScalingX','lockScalingY','hasControls'];  // custom/lock state kept in undo + saved designs
+const UNTITLED='ดีไซน์ที่ไม่มีชื่อ';
+let docW=1080,docH=1080,zoom=.5,docId=null,docName=UNTITLED,docKind='',docSize='';
+const newId=()=>'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function newDoc(W,H,kind,size){flushSave();docId=newId();docW=W;docH=H;docName=UNTITLED;docKind=kind;docSize=size||`${W} × ${H} px`;
+ cv.clear();cv.backgroundColor='#fff';$('docTitle').value=docName;hist=[];hi=-1;save();go('editor');}
+$('docTitle').onchange=e=>{docName=e.target.value.trim()||UNTITLED;e.target.value=docName;scheduleSave();};
+$('docTitle').onkeydown=e=>{if(e.key==='Enter'||e.key==='Escape')e.target.blur();};
+
+/* autosave: every change lands in Downloads/PinCut/designs, which feeds "ล่าสุด" on the home screen */
+let saveT=null,saving=Promise.resolve();
+function setSaveState(s){const b=$('saveState'),t={ok:'บันทึกแล้ว',pending:'กำลังบันทึก…',err:'บันทึกไม่สำเร็จ'}[s];
+ b.className='saved '+s;b.title=t;b.setAttribute('aria-label',t);}
+function scheduleSave(){if(!docId)return;clearTimeout(saveT);setSaveState('pending');saveT=setTimeout(flushSave,800);}
+function thumbOf(){return cv.toDataURL({format:'jpeg',quality:.8,multiplier:Math.min(1,360/Math.max(docW,docH))/zoom});}
+function flushSave(){if(!saveT)return saving;clearTimeout(saveT);saveT=null;
+ const doc={id:docId,name:docName,kind:docKind,size:docSize,w:docW,h:docH,canvas:cv.toJSON(PROPS),thumb:thumbOf()};
+ saving=saving.then(()=>api().save_design(doc)).then(m=>{upsert(m);setSaveState('ok');},
+  e=>{setSaveState('err');toast('บันทึกดีไซน์ไม่สำเร็จ: '+(e.message||e),5000);});
+ return saving;}
+async function openDesign(id){let d;try{d=await api().load_design(id);}catch(e){toast('เปิดดีไซน์ไม่ได้: '+(e.message||e),5000);return;}
+ await flushSave();closeDrawer();clearSel();showDoc(d,()=>setSaveState('ok'));}
+function showDoc(d,done){docId=d.id;docW=d.w;docH=d.h;docName=d.name||UNTITLED;docKind=d.kind||'';docSize=d.size||'';$('docTitle').value=docName;
+ busy=true;cv.loadFromJSON(d.canvas||{},()=>{cv.renderAll();busy=false;hist=[JSON.stringify(cv.toJSON(PROPS))];hi=0;done();});
+ go('editor');}
 function setZoom(z){zoom=z;cv.setZoom(z);cv.setWidth(docW*z);cv.setHeight(docH*z);$('zoom').value=z*100;$('zoomTxt').textContent=Math.round(z*100)+'%';
  $('addpage').style.width=$('pagetools').style.width=docW*z+'px';$('pagetools').style.alignSelf='center';placeFloat();}
 function fit(){const s=$('stage');setZoom(Math.min((s.clientWidth-120)/docW,(s.clientHeight-200)/docH,1));}
@@ -378,9 +581,15 @@ function placeFloat(){const o=act(),f=$('float');if(!o){f.style.display='none';r
  f.style.display='flex';f.style.left=(c.left-s.left+st.scrollLeft+r.left+r.width/2-f.offsetWidth/2)+'px';
  f.style.top=(c.top-s.top+st.scrollTop+r.top-f.offsetHeight-14)+'px';}
 const isText=o=>o&&o.type==='i-text';
-function onSel(){const t=isText(act());if(act())$('op').value=Math.round(act().opacity*100);$('ctxbar').style.display=t?'none':'flex';$('tbar').style.display=t?'flex':'none';if(t)syncTbar();placeFloat();}
+const SHAPE_T=['rect','circle','triangle','polygon','line','path'],strokeColored=o=>['line','path'].includes(o.type);
+const hex=c=>'#'+new fabric.Color(c||'#000').toHex();
+function onSel(){const o=act(),t=isText(o),ty=o?.type;if(o)$('op').value=Math.round(o.opacity*100);$('ctxbar').style.display=t?'none':'flex';$('tbar').style.display=t?'flex':'none';if(t)syncTbar();
+ const show=(c,v)=>document.querySelectorAll('#ctxbar .'+c).forEach(e=>e.style.display=v?'':'none');
+ show('imgOnly',ty==='image');show('notImg',ty!=='image');show('multiOnly',ty==='activeSelection');show('groupOnly',ty==='group');show('fillOnly',SHAPE_T.includes(ty));
+ if(SHAPE_T.includes(ty))$('sFill').value=hex(o[strokeColored(o)?'stroke':'fill']);
+ placeFloat();renderLayers();if(openP==='fx')renderFx();}
 cv.on('selection:created',onSel);cv.on('selection:updated',onSel);
-cv.on('selection:cleared',()=>{$('ctxbar').style.display='none';$('tbar').style.display='none';$('float').style.display='none';$('menu').style.display='none';});
+cv.on('selection:cleared',()=>{renderLayers();if(openP==='fx')renderFx();$('ctxbar').style.display='none';$('tbar').style.display='none';$('float').style.display='none';$('menu').style.display='none';});
 ['object:moving','object:scaling','object:rotating'].forEach(e=>cv.on(e,()=>{$('float').style.display='none';$('menu').style.display='none';}));
 cv.on('object:modified',()=>{save();placeFloat();});$('stage').onscroll=placeFloat;
 function toggleMenu(){const m=$('menu'),f=$('float');if(m.style.display==='flex'){m.style.display='none';return;}
@@ -392,7 +601,7 @@ function pasteObj(){clip&&clip.clone(c=>{c.set({left:c.left+30,top:c.top+30});cv
 function flip(){const o=act();if(o){o.set('flipX',!o.flipX);cv.requestRenderAll();save();}}
 function layer(d){const o=act();if(!o)return;({front:()=>o.bringToFront(),back:()=>o.sendToBack(),1:()=>o.bringForward(),'-1':()=>o.sendBackwards()})[d]();cv.requestRenderAll();save();}
 function center(){const o=act();if(o){cv.viewportCenterObject?o.set({left:(docW-o.getScaledWidth())/2,top:(docH-o.getScaledHeight())/2}).setCoords():0;cv.requestRenderAll();save();placeFloat();}}
-function lock(){const o=act();if(!o)return;const l=!o.lockMovementX;o.set({lockMovementX:l,lockMovementY:l,lockRotation:l,lockScalingX:l,lockScalingY:l,hasControls:!l});cv.requestRenderAll();}
+function lock(o=act()){if(!o)return;const l=!o.lockMovementX;o.set({lockMovementX:l,lockMovementY:l,lockRotation:l,lockScalingX:l,lockScalingY:l,hasControls:!l});cv.requestRenderAll();save();renderLayers();}
 $('op').oninput=e=>{const o=act();if(o){o.set('opacity',e.target.value/100);cv.requestRenderAll();}};$('op').onchange=()=>save();
 async function cutBg(){const o=act();
  if(!o||o.type!=='image'||!o.pincutId){toast('เลือกรูปจากแท็บอัพโหลดบนผืนงานก่อน');return;}
@@ -401,14 +610,22 @@ async function cutBg(){const o=act();
   o.setSrc(it.src,()=>{o.pincutId=it.id;cv.requestRenderAll();save();},{crossOrigin:'anonymous'});
   thumb(it.src,'uploads',()=>addImage(it.src,it.id));toast('ตัดพื้นหลังแล้ว (เก็บไฟล์ใหม่ไว้ในแท็บอัพโหลดด้วย)');}
  catch(e){toast('ตัดพื้นหลังไม่สำเร็จ: '+(e.message||e),6000);}}
+let nudgeT;
 document.onkeydown=e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)||!$('editor').classList.contains('on'))return;
- if(e.key==='Delete')del();if(!e.ctrlKey)return;const k=e.key.toLowerCase();
+ const o=act();if(o?.isEditing)return;
+ if(o&&(e.key==='Delete'||e.key==='Backspace')){e.preventDefault();del();}
+ if(o&&e.key.startsWith('Arrow')){e.preventDefault();const s=e.shiftKey?10:1;  // arrows nudge 1px, Shift = 10px
+  o.set({left:o.left+({ArrowLeft:-s,ArrowRight:s}[e.key]||0),top:o.top+({ArrowUp:-s,ArrowDown:s}[e.key]||0)}).setCoords();
+  cv.requestRenderAll();placeFloat();clearTimeout(nudgeT);nudgeT=setTimeout(save,400);}
+ if(!e.ctrlKey&&!e.metaKey)return;const k=e.key.toLowerCase();
+ if(k==='g'){e.preventDefault();e.shiftKey?ungroupSel():groupSel();}
+ if(k==='a'){e.preventDefault();selectAll();}
  if(k==='d'){e.preventDefault();dup();}if(k==='z')undo();if(k==='y')redo();if(k==='c')copyObj();if(k==='v')pasteObj();};
 
 /* undo/redo */
 let hist=[],hi=-1,busy=false;
-function save(){if(busy)return;hist=hist.slice(0,hi+1);hist.push(JSON.stringify(cv.toJSON(['pincutId'])));hi++;}
-function load(i){busy=true;cv.loadFromJSON(hist[i],()=>{cv.renderAll();busy=false;});}
+function save(){if(busy)return;hist=hist.slice(0,hi+1);hist.push(JSON.stringify(cv.toJSON(PROPS)));hi++;scheduleSave();}
+function load(i){busy=true;cv.loadFromJSON(hist[i],()=>{cv.renderAll();busy=false;scheduleSave();});}
 function undo(){if(hi>0)load(--hi);}function redo(){if(hi<hist.length-1)load(++hi);}
 
 /* ===== left panels ===== */
@@ -416,7 +633,8 @@ function undo(){if(hi>0)load(--hi);}function redo(){if(hi<hist.length-1)load(++h
 let openP=null;
 function openPanel(p){openP=p;
  document.querySelectorAll('#editor .rail button').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
- ['pin','text','up'].forEach(k=>$('panel-'+k).hidden=p!==k);$('collapse').classList.toggle('on',!!p);
+ document.querySelectorAll('#editor .panel').forEach(x=>x.hidden=x.id!=='panel-'+p);$('collapse').classList.toggle('on',!!p);
+ cv.isDrawingMode=p==='draw';if(p==='draw')syncPen();if(p==='layers')renderLayers();if(p==='fx')renderFx();if(p==='bg')renderBg();
  requestAnimationFrame(fit);}
 document.querySelectorAll('#editor .rail button').forEach(b=>b.onclick=()=>openPanel(openP===b.dataset.p?null:b.dataset.p));
 function thumb(src,box,onClick,getBtn){const d=document.createElement('div');d.className='it';
@@ -432,11 +650,30 @@ const WEB={n:0,meta:{},login_status:async()=>false,list_library:async()=>[],list
  file_info:async id=>WEB.meta[id],trash:async id=>{delete WEB.meta[id];},
  save_copy:async id=>{const m=WEB.meta[id],a=document.createElement('a');a.href=m.src;a.download=m.name;a.click();return m.name;},save_font:async name=>name.replace(/\.[^.]+$/,''),
  cut_background:async()=>{throw new Error(APP_ONLY);},
- save_export:async(data,ext)=>{const a=document.createElement('a');a.href=data;a.download='design.'+ext;a.click();return 'design.'+ext;}};
+ save_export:async(data,ext,name='design')=>{const f=`${name}.${ext}`,a=document.createElement('a');a.href=data;a.download=f;a.click();return f;}};
+/* web demo designs: kept in this browser's localStorage (memory only if storage is blocked or full) */
+const WD={mem:null,warned:false,
+ all(){if(!WD.mem){try{WD.mem=JSON.parse(localStorage.getItem('pincut.designs'))||{};}catch{WD.mem={};}}return WD.mem;},
+ put(){try{localStorage.setItem('pincut.designs',JSON.stringify(WD.mem));}catch{if(!WD.warned){WD.warned=true;toast('พื้นที่เก็บในเบราว์เซอร์เต็ม ดีไซน์จะหายเมื่อปิดหน้านี้',6000);}}},
+ meta(d){const {canvas,trashed,...m}=d;return {...m,objects:(canvas?.objects||[]).length};},
+ get(id,trashed=false){const d=WD.all()[id];if(!d||!!d.trashed!==trashed)throw new Error('ไม่พบดีไซน์');return d;}};
+Object.assign(WEB,{
+ list_designs:async()=>Object.values(WD.all()).filter(d=>!d.trashed).map(WD.meta).sort((a,b)=>b.updated-a.updated),
+ load_design:async id=>WD.get(id),
+ save_design:async doc=>{const all=WD.all(),old=all[doc.id]||{},t=Date.now()/1000;
+  all[doc.id]={...old,...doc,name:doc.name||UNTITLED,created:old.created||t,updated:t,starred:!!old.starred,trashed:false};WD.put();return WD.meta(all[doc.id]);},
+ update_design:async(id,name,starred)=>{const d=WD.get(id);if(name!=null&&String(name).trim())d.name=String(name).trim().slice(0,120);
+  if(starred!=null)d.starred=!!starred;WD.put();return WD.meta(d);},
+ trash_design:async id=>{WD.get(id).trashed=true;WD.put();},
+ restore_design:async id=>{const d=WD.get(id,true);d.trashed=false;WD.put();return WD.meta(d);}});
 const api=()=>window.pywebview?window.pywebview.api:WEB;
 const ready=new Promise(r=>{if(window.pywebview)return r();window.addEventListener('pywebviewready',r);setTimeout(r,1500);});
 const inApp=()=>!!window.pywebview;
-let toastT;function toast(t,ms=2500){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),ms);}
+let toastT;
+function toast(t,ms=2500,action){const el=$('toast'),b=el.querySelector('button');el.querySelector('span').textContent=t;
+ b.hidden=!action;el.classList.toggle('act',!!action);
+ if(action){b.textContent=action.label;b.onclick=()=>{el.classList.remove('on');action.fn();};}
+ el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),action?Math.max(ms,6000):ms);}
 function libThumb(it){const d=thumb(it.src,'uploads',()=>addImage(it.src,it.id));
  const m=document.createElement('button');m.className='more';m.title='ตัวเลือก';m.setAttribute('aria-haspopup','menu');m.innerHTML='<svg><use href="#i-more"/></svg>';
  m.onclick=e=>{e.stopPropagation();fileMenu(it,d,m);};d.append(m);}
@@ -460,11 +697,13 @@ async function fileMenu(it,card,btn){if(fmOpen===btn){closeFileMenu();return;}cl
   if(!del.dataset.sure){del.dataset.sure=1;del.querySelector('span').textContent='กดอีกครั้งเพื่อยืนยัน';return;}
   closeFileMenu();try{await api().trash(it.id);card.remove();toast(inApp()?'ย้ายไปที่ถังขยะแล้ว (Downloads/PinCut/trash)':'ลบออกแล้ว');}
   catch(e){toast('ลบไม่สำเร็จ: '+(e.message||e),5000);}};
- m.hidden=false;fmOpen=btn;btn.setAttribute('aria-expanded','true');
+ placePop(m,btn);}
+/* show #fmenu under `btn` (kept on screen) and focus its first item */
+function placePop(m,btn){m.hidden=false;fmOpen=btn;btn.setAttribute('aria-expanded','true');
  const r=btn.getBoundingClientRect();
  m.style.left=Math.max(8,Math.min(r.left,innerWidth-m.offsetWidth-8))+'px';
  m.style.top=Math.max(8,Math.min(r.bottom+6,innerHeight-m.offsetHeight-8))+'px';
- m.querySelector('button').focus();}
+ m.querySelector('button')?.focus();}
 document.addEventListener('click',e=>{if(fmOpen&&!$('fmenu').contains(e.target))closeFileMenu();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFileMenu();});
 $('uploads').addEventListener('scroll',closeFileMenu);document.querySelector('#panel-up').addEventListener('scroll',closeFileMenu);
@@ -473,7 +712,7 @@ window.onLibraryAdded=it=>{libThumb(it);toast('เก็บรูปเข้า
 /* Pinterest search: opens the real Pinterest window (logged in) */
 async function runSearch(q){if(!inApp()){toast(APP_ONLY,5000);return;}if(!pinUser){showLogin();return;}await ready;api().open_search(q);toast('เปิดผลค้นหาในหน้าต่าง Pinterest แล้ว');}
 $('q').onkeydown=e=>{if(e.key==='Enter'&&q.value.trim())runSearch(q.value.trim());};
-$('homeQ').onkeydown=e=>{if(e.key==='Enter'&&homeQ.value.trim()){q.value=homeQ.value;newDoc(1080,1080,'โพสต์สี่เหลี่ยม');openPanel('pin');runSearch(homeQ.value.trim());}};
+$('homeQ').onkeydown=e=>{if(e.key==='Enter'&&homeQ.value.trim()){q.value=homeQ.value;newDoc(1080,1080,'โพสต์สี่เหลี่ยม','1080 × 1080 px');openPanel('pin');runSearch(homeQ.value.trim());}};
 
 /* Pinterest account */
 let pinUser=null,waitLogin=null;
@@ -508,9 +747,132 @@ $('upFile').onchange=e=>{readFiles(e.target.files,async(src,name)=>{const it=awa
 $('homeUpload').onchange=e=>{readFiles(e.target.files,async(src,name)=>{const it=await saveUpload(src,name);if(!it)return;
  const im=new Image();im.onload=()=>{newDoc(im.width,im.height,'จากรูปที่อัพโหลด');libThumb(it);addImage(it.src,it.id);};im.src=it.src;});e.target.value='';};
 
+/* ===== home: quick-create row ===== */
+const CATS=[[4,'โพสต์','#ef5a4c','i-img'],[1,'สตอรี่','#e8437a','i-phone'],[2,'Instagram 4:5','#a855f7','i-insta'],[3,'เอกสาร A4','#0d9488','i-doc'],
+ [0,'เอกสาร US','#2563eb','i-doc'],[5,'YouTube','#dc2626','i-play'],[6,'โลโก้','#d97706','i-star']];
+const KIND=Object.fromEntries(CATS.map(([i,,c,ic])=>[PRESETS[i][0],[c,ic]]));
+const kindLook=k=>KIND[k]||(k==='จากรูปที่อัพโหลด'?['#ff9f5a','i-cloud']:['#5e6670','i-resize']);
+$('cats').innerHTML=CATS.map(([i,l,c,ic])=>`<button class="cat" onclick="pickPreset(${i})"><span class="circ" style="background:${c}"><svg><use href="#${ic}"/></svg></span>${l}</button>`).join('')+
+ `<button class="cat" onclick="go('size')"><span class="circ ghost"><svg><use href="#i-resize"/></svg></span>กำหนดขนาดเอง</button>`+
+ `<button class="cat" onclick="homeUpload.click()"><span class="circ ghost"><svg><use href="#i-cloud"/></svg></span>อัพโหลด</button>`;
+
+/* ===== home: "ล่าสุด" = every design ever made, autosaved ===== */
+let designs=[],selected=new Set();
+const pref={view:'grid',sort:'updated',type:'',star:false};
+try{Object.assign(pref,JSON.parse(localStorage.getItem('pincut.recent'))||{});}catch{}
+const savePref=()=>{try{localStorage.setItem('pincut.recent',JSON.stringify(pref));}catch{}};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>`&#${c.charCodeAt(0)};`);
+const rtf=new Intl.RelativeTimeFormat('th',{numeric:'auto'});
+function ago(t){const s=Date.now()/1000-t;if(s<60)return 'เมื่อสักครู่';
+ const u=[[60,'minute'],[3600,'hour'],[86400,'day'],[604800,'week'],[2629800,'month'],[31557600,'year']];
+ let i=0;while(i<u.length-1&&s>=u[i+1][0])i++;return rtf.format(-Math.floor(s/u[i][0]),u[i][1]);}
+const fullDate=t=>new Date(t*1000).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});
+const SORTS={updated:['แก้ไขล่าสุด',(a,b)=>b.updated-a.updated],created:['สร้างล่าสุด',(a,b)=>b.created-a.created],
+ oldest:['แก้ไขเก่าที่สุด',(a,b)=>a.updated-b.updated],name:['ชื่อ ก–ฮ / A–Z',(a,b)=>a.name.localeCompare(b.name,'th')]};
+function upsert(m){const i=designs.findIndex(d=>d.id===m.id);if(i<0)designs.unshift(m);else designs[i]=m;}
+const byId=id=>designs.find(d=>d.id===id);
+async function loadRecent(){try{designs=await api().list_designs();}catch(e){toast('โหลดประวัติดีไซน์ไม่ได้: '+(e.message||e),5000);}renderRecent();}
+
+function shown(){return designs.filter(d=>(!pref.type||d.kind===pref.type)&&(!pref.star||d.starred)).sort(SORTS[pref.sort][1]);}
+function renderRecent(){const box=$('recent'),list=pref.view==='list',ds=shown();
+ for(const id of selected)if(!byId(id))selected.delete(id);
+ box.className='cards'+(list?' list':'')+(selected.size?' selecting':'');
+ $('viewBtn').innerHTML=`<svg><use href="#i-${list?'grid':'list'}"/></svg>`;
+ const vt=list?'มุมมองตาราง':'มุมมองรายการ';$('viewBtn').title=vt;$('viewBtn').setAttribute('aria-label',vt);
+ $('fType').querySelector('span').textContent=pref.type||'ประเภท';$('fType').classList.toggle('on',!!pref.type);
+ $('fStar').classList.toggle('on',pref.star);$('fStar').setAttribute('aria-pressed',pref.star);
+ if(!ds.length){box.innerHTML=`<div class="empty">${designs.length?'ไม่มีดีไซน์ที่ตรงกับตัวกรอง':'ยังไม่มีดีไซน์ — เลือกขนาดด้านบนเพื่อเริ่ม งานทุกชิ้นจะบันทึกอัตโนมัติและขึ้นตรงนี้'}</div>`;renderSel();return;}
+ const ck=d=>`<button class="ck" role="checkbox" aria-checked="${selected.has(d.id)}" aria-label="เลือก ${esc(d.name)}" data-a="sel"><svg><use href="#i-tick"/></svg></button>`;
+ const acts=d=>`<div class="acts"><button class="star${d.starred?' on':''}" data-a="star" aria-pressed="${!!d.starred}" aria-label="${d.starred?'ยกเลิกติดดาว':'ติดดาว'}" title="${d.starred?'ยกเลิกติดดาว':'ติดดาว'}"><svg><use href="#i-star"/></svg></button>`+
+  `<button data-a="more" aria-haspopup="menu" aria-expanded="false" aria-label="ตัวเลือกของ ${esc(d.name)}" title="ตัวเลือก"><svg><use href="#i-more"/></svg></button></div>`;
+ const dot=d=>{const [c,ic]=kindLook(d.kind);return `<span class="kdot" style="background:${c}"><svg><use href="#${ic}"/></svg></span>`;};
+ const img=d=>d.thumb?`<img src="${esc(d.thumb)}" alt="" loading="lazy">`:'';
+ box.innerHTML=list
+  ?`<div class="lhead"><span></span><span>ชื่อ</span><span>ประเภท</span><span>แก้ไขแล้ว</span><span></span></div>`+ds.map(d=>
+   `<div class="lrow${selected.has(d.id)?' sel':''}" role="listitem" tabindex="0" data-id="${esc(d.id)}">${ck(d)}<div class="nmc"><span class="tn">${img(d)}</span><span class="nm">${esc(d.name)}</span></div>`+
+   `<span class="c">${esc(d.kind||d.size)}</span><span class="c" title="${esc(fullDate(d.updated))}">${ago(d.updated)}</span>${acts(d)}</div>`).join('')
+  :ds.map(d=>`<div class="card${selected.has(d.id)?' sel':''}" role="listitem" tabindex="0" data-id="${esc(d.id)}"><div class="pv">${img(d)}</div>${ck(d)}${acts(d)}`+
+   `<span class="nm" title="${esc(d.name)}">${esc(d.name)}</span><small>${dot(d)}<span title="${esc(fullDate(d.updated))}">แก้ไข ${ago(d.updated)}</span></small></div>`).join('');
+ renderSel();}
+
+$('recent').onclick=e=>{const row=e.target.closest('[data-id]');if(!row)return;const id=row.dataset.id,a=e.target.closest('[data-a]')?.dataset.a;
+ if(a==='sel'||(!a&&selected.size)){selected.has(id)?selected.delete(id):selected.add(id);renderRecent();return;}
+ if(a==='star'){e.stopPropagation();toggleStar(id);return;}
+ if(a==='more'){e.stopPropagation();designMenu(id,e.target.closest('button'));return;}
+ openDesign(id);};
+$('recent').onkeydown=e=>{if(e.key==='Enter'&&e.target.matches('[data-id]'))openDesign(e.target.dataset.id);};
+$('viewBtn').onclick=()=>{pref.view=pref.view==='list'?'grid':'list';savePref();renderRecent();};
+$('fStar').onclick=()=>{pref.star=!pref.star;savePref();renderRecent();};
+function pickMenu(btn,items,cur,onPick){if(fmOpen===btn){closeFileMenu();return;}closeFileMenu();const m=$('fmenu');
+ m.innerHTML=items.map(([v,l])=>`<button role="menuitemradio" aria-checked="${v===cur}" data-v="${esc(v)}">${esc(l)}</button>`).join('');
+ m.querySelectorAll('button').forEach(b=>b.onclick=()=>{closeFileMenu();onPick(b.dataset.v);});placePop(m,btn);}
+$('fType').onclick=e=>{e.stopPropagation();const kinds=[...new Set(designs.map(d=>d.kind).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));
+ pickMenu($('fType'),[['','ทุกประเภท'],...kinds.map(k=>[k,k])],pref.type,v=>{pref.type=v;savePref();renderRecent();});};
+$('sortBtn').onclick=e=>{e.stopPropagation();pickMenu($('sortBtn'),Object.entries(SORTS).map(([k,[l]])=>[k,l]),pref.sort,v=>{pref.sort=v;savePref();renderRecent();});};
+setInterval(()=>$('home').classList.contains('on')&&!fmOpen&&renderRecent(),60000);  // keep "แก้ไข x นาทีที่ผ่านมา" fresh
+
+/* star / rename / copy / trash — each with an undo where it makes sense */
+async function toggleStar(id,silent){const d=byId(id);if(!d)return;
+ try{upsert(await api().update_design(id,null,!d.starred));}catch(e){toast('ทำไม่สำเร็จ: '+(e.message||e),5000);return;}
+ renderRecent();if(!silent){const s=byId(id).starred;toast(`${s?'ติดดาว':'ยกเลิกการติดดาว'} ${d.name} แล้ว`,4000,{label:'ย้อนกลับ',fn:()=>toggleStar(id,true)});}}
+async function renameDesign(id,name){try{upsert(await api().update_design(id,name,null));renderRecent();}catch(e){toast('เปลี่ยนชื่อไม่สำเร็จ: '+(e.message||e),5000);}}
+async function copyDesign(id){const d=await api().load_design(id);
+ const m=await api().save_design({...d,id:newId(),name:('สำเนาของ '+d.name).slice(0,120)});upsert(m);return m;}
+async function trashDesigns(ids){const done=[];
+ for(const id of ids){try{await api().trash_design(id);done.push(id);}catch(e){toast('ย้ายไปถังขยะไม่สำเร็จ: '+(e.message||e),5000);}}
+ if(!done.length)return;const names=done.map(id=>byId(id)?.name);designs=designs.filter(d=>!done.includes(d.id));closeDrawer();renderRecent();
+ toast(done.length>1?`ย้าย ${done.length} ดีไซน์ไปที่ถังขยะแล้ว`:`ย้าย ${names[0]} ไปที่ถังขยะแล้ว`,6000,{label:'ย้อนกลับ',fn:async()=>{
+  for(const id of done){try{upsert(await api().restore_design(id));}catch{}}renderRecent();}});}
+/* render a saved design off-screen at full size, for download without opening it */
+async function downloadDesign(id){toast('กำลังเตรียมไฟล์…',8000);try{const d=await api().load_design(id);
+ const sc=new fabric.StaticCanvas(document.createElement('canvas'),{width:d.w,height:d.h,enableRetinaScaling:false});
+ const url=await new Promise(r=>sc.loadFromJSON(d.canvas||{},()=>{sc.renderAll();r(sc.toDataURL({format:'png'}));}));sc.dispose();
+ const path=await api().save_export(url,'png',d.name);toast(path?'บันทึกแล้ว: '+path:'ยกเลิกแล้ว',4000);}
+ catch(e){toast('ดาวน์โหลดไม่สำเร็จ: '+(e.message||e),5000);}}
+
+function designMenu(id,btn){if(fmOpen===btn){closeFileMenu();return;}closeFileMenu();const d=byId(id),m=$('fmenu');if(!d)return;
+ m.innerHTML=`<div class="fh"><div class="rn"><b></b><button class="pen" data-a="rn" aria-label="เปลี่ยนชื่อ" title="เปลี่ยนชื่อ"><svg><use href="#i-edit"/></svg></button></div>
+  <small>${esc(d.size||'')}${d.size?' · ':''}แก้ไข ${ago(d.updated)}</small></div>
+  <button data-a="open" role="menuitem"><svg><use href="#i-open"/></svg>เปิด</button>
+  <button data-a="info" role="menuitem"><svg><use href="#i-info"/></svg>รายละเอียด</button>
+  <button data-a="star" role="menuitem" class="${d.starred?'on':''}"><svg><use href="#i-star"/></svg>${d.starred?'ยกเลิกติดดาว':'ติดดาว'}</button><hr>
+  <button data-a="dup" role="menuitem"><svg><use href="#i-copy"/></svg>ทำสำเนา</button>
+  <button data-a="dl" role="menuitem"><svg><use href="#i-down"/></svg>ดาวน์โหลด (PNG)</button><hr>
+  <button data-a="del" role="menuitem" class="danger"><svg><use href="#i-trash"/></svg>ย้ายไปที่ถังขยะ</button>`;
+ m.querySelector('b').textContent=d.name;
+ const A={open:()=>openDesign(id),info:()=>openDrawer(id),star:()=>toggleStar(id),dl:()=>downloadDesign(id),del:()=>trashDesigns([id]),
+  dup:async()=>{try{const c=await copyDesign(id);renderRecent();toast(`สร้าง ${c.name} แล้ว`);}catch(e){toast('ทำสำเนาไม่สำเร็จ: '+(e.message||e),5000);}},
+  rn:()=>{const rn=m.querySelector('.rn');rn.innerHTML='<input aria-label="ชื่อดีไซน์" maxlength="120">';const i=rn.querySelector('input');i.value=d.name;i.focus();i.select();
+   let done=false;const commit=ok=>{if(done)return;done=true;closeFileMenu();if(ok&&i.value.trim()&&i.value.trim()!==d.name)renameDesign(id,i.value);};
+   i.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')commit(true);if(e.key==='Escape')commit(false);};i.onblur=()=>commit(true);}};
+ m.querySelectorAll('[data-a]').forEach(b=>b.onclick=e=>{e.stopPropagation();const a=b.dataset.a;if(a!=='rn')closeFileMenu();A[a]();});
+ placePop(m,btn);}
+
+/* bulk selection */
+function renderSel(){const n=selected.size;$('selbar').classList.toggle('on',n>0);$('selN').textContent=`เลือกแล้ว ${n} รายการ`;}
+function clearSel(){if(!selected.size)return;selected.clear();renderRecent();}
+async function bulk(a){const ids=[...selected];if(!ids.length)return;
+ if(a==='trash'){selected.clear();return trashDesigns(ids);}
+ if(a==='dup'){let n=0;for(const id of ids){try{await copyDesign(id);n++;}catch{}}selected.clear();renderRecent();toast(`ทำสำเนา ${n} ดีไซน์แล้ว`);return;}
+ for(const id of ids)await downloadDesign(id);}
+
+/* details drawer */
+let drawerId=null;
+function openDrawer(id){const d=byId(id);if(!d)return;drawerId=id;$('dName').textContent=d.name;
+ const row=(k,v)=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`;
+ $('dBody').innerHTML=`<div class="dpv">${d.thumb?`<img src="${esc(d.thumb)}" alt="ตัวอย่าง ${esc(d.name)}">`:''}</div>
+  <dl>${row('ประเภท',d.kind||'—')}${row('ขนาด',d.size||`${d.w} × ${d.h} px`)}${row('พิกเซล',`${d.w} × ${d.h}`)}${row('องค์ประกอบ',d.objects+' ชิ้น')}
+  ${row('ติดดาว',d.starred?'ใช่':'ไม่')}${row('วันที่แก้ไข',fullDate(d.updated))}${row('วันที่สร้าง',fullDate(d.created))}</dl>
+  <div class="dacts"><button class="btn pri" id="dOpen"><svg><use href="#i-open"/></svg>เปิด</button><button class="btn out" id="dDl"><svg><use href="#i-down"/></svg>ดาวน์โหลด</button></div>`;
+ $('dOpen').onclick=()=>openDesign(id);$('dDl').onclick=()=>downloadDesign(id);
+ $('drawer').classList.add('on');$('drawer').setAttribute('aria-hidden','false');$('drawer').querySelector('header button').focus();}
+function closeDrawer(){if(!drawerId)return;drawerId=null;$('drawer').classList.remove('on');$('drawer').setAttribute('aria-hidden','true');}
+// capture phase: runs before the menu's own Escape handler, so one Escape closes only the top-most thing
+document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!$('home').classList.contains('on')||fmOpen)return;if(drawerId)closeDrawer();else clearSel();},true);
+
 /* startup: login state, library images, saved fonts */
 ready.then(async()=>{if(!inApp())toast('โหมดเดโมบนเว็บ: อัพโหลดรูป ใส่ข้อความ และดาวน์โหลดได้ ส่วน Pinterest/ตัดพื้นหลังต้องใช้แอป',6000);setUser(await api().login_status()?'Pinterest':null);
- (await api().list_library()).reverse().forEach(libThumb);
+ loadRecent();(await api().list_library()).reverse().forEach(libThumb);
  for(const f of await api().list_fonts()){try{await registerFont(f.name,f.data);myFonts.push(f);}catch{}}renderFonts();});
 
 /* ===== text ===== */
@@ -557,15 +919,195 @@ cv.on('text:changed',placeFloat);cv.on('text:editing:exited',save);
 let fmt='pdf',mult=1;
 document.querySelectorAll('.fmt').forEach(b=>b.onclick=()=>{fmt=b.dataset.f;document.querySelectorAll('.fmt').forEach(x=>x.classList.toggle('on',x===b));});
 document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{mult=+b.dataset.m;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x===b));});
-async function exportFile(){cv.discardActiveObject();const bg=cv.backgroundColor;
+async function exportFile(){cv.discardActiveObject();
+ if(fmt==='svg'){$('sheet').classList.remove('on');
+  const svg=cv.toSVG({width:docW,height:docH,viewBox:{x:0,y:0,width:docW,height:docH}});
+  try{const path=await api().save_export(await dataUrl(svg,'image/svg+xml'),'svg',docName);if(path)toast('บันทึกแล้ว: '+path,4000);}
+  catch(e){toast('บันทึกไม่สำเร็จ: '+(e.message||e),5000);}return;}
+ const bg=cv.backgroundColor;
  if(fmt==='png'&&$('transparent').checked)cv.backgroundColor=null;cv.renderAll();
  const url=cv.toDataURL({format:fmt==='jpg'?'jpeg':'png',quality:.92,multiplier:mult/zoom});cv.backgroundColor=bg;cv.renderAll();let data=url;
  if(fmt==='pdf'){const pdf=new jspdf.jsPDF({orientation:docW>docH?'l':'p',unit:'px',format:[docW,docH]});pdf.addImage(url,'PNG',0,0,docW,docH);data=pdf.output('datauristring');}
  $('sheet').classList.remove('on');
- try{const path=await api().save_export(data,fmt);if(path){toast('บันทึกแล้ว: '+path,4000);addRecent(url);}}
+ try{const path=await api().save_export(data,fmt,docName);if(path)toast('บันทึกแล้ว: '+path,4000);}
  catch(e){toast('บันทึกไม่สำเร็จ: '+(e.message||e),5000);}}
-function addRecent(url){const r=$('recent');r.querySelector('.empty')?.remove();const d=document.createElement('div');d.className='card';
- d.innerHTML=`<div class="pv"><img src="${url}"></div><b>ดีไซน์ที่ไม่มีชื่อ</b><small>${docName}</small>`;r.prepend(d);}
+
+/* ===== shapes & lines ===== */
+const ACC='#ef5a4c';
+const starPts=(R,r)=>[...Array(10)].map((_,i)=>{const a=Math.PI/5*i-Math.PI/2,d=i%2?r:R;return {x:R+d*Math.cos(a),y:R+d*Math.sin(a)};});
+const SHAPES={rect:s=>new fabric.Rect({width:s,height:s,fill:ACC}),
+ round:s=>new fabric.Rect({width:s,height:s,rx:s*.18,ry:s*.18,fill:'#ff9f5a'}),
+ circle:s=>new fabric.Circle({radius:s/2,fill:'#a855f7'}),
+ tri:s=>new fabric.Triangle({width:s,height:s*.87,fill:'#0d9488'}),
+ star:s=>new fabric.Polygon(starPts(s/2,s/4.6),{fill:'#f5b301'}),
+ line:s=>new fabric.Line([0,0,s*1.4,0],{stroke:'#0e1318',strokeWidth:Math.max(2,s/40)}),
+ arrow:s=>new fabric.Path(`M0 ${s*.1} L${s*1.4} ${s*.1} M${s*1.22} 0 L${s*1.4} ${s*.1} L${s*1.22} ${s*.2}`,
+  {fill:'',stroke:'#0e1318',strokeWidth:Math.max(2,s/40),strokeLineCap:'round',strokeLineJoin:'round'})};
+function addShape(k){const o=SHAPES[k](Math.min(docW,docH)*.3);o.set({left:(docW-o.getScaledWidth())/2,top:(docH-o.getScaledHeight())/2});cv.add(o).setActiveObject(o);save();}
+$('sFill').oninput=e=>{const o=act();if(o&&SHAPE_T.includes(o.type)){o.set(strokeColored(o)?'stroke':'fill',e.target.value);cv.requestRenderAll();}};
+$('sFill').onchange=()=>save();
+
+/* ===== page background & pen ===== */
+const SWATCH=['#ffffff','#f2f3f5','#0e1318','#ef5a4c','#ff9f5a','#f5b301','#fdebe8','#ffeede','#fff4c2','#d9f2ec','#dbeafe','#ede9fe'];
+const swatches=(box,cur,pick)=>{$(box).innerHTML=SWATCH.map(c=>`<button style="background:${c}" data-c="${c}" aria-label="สี ${c}" class="${c===cur?'on':''}"></button>`).join('');
+ $(box).onclick=e=>{const c=e.target.dataset.c;if(c)pick(c);};};
+function renderBg(){const c=typeof cv.backgroundColor==='string'?hex(cv.backgroundColor):'#ffffff';$('bgColor').value=c;swatches('bgSw',c,setBg);}
+function setBg(c){cv.backgroundColor=c;cv.requestRenderAll();save();renderBg();}
+$('bgColor').oninput=e=>{cv.backgroundColor=e.target.value;cv.requestRenderAll();};$('bgColor').onchange=e=>setBg(e.target.value);
+function syncPen(){const b=cv.freeDrawingBrush;b.color=$('penColor').value;b.width=+$('penSize').value;$('penOut').textContent=b.width;
+ swatches('penSw',b.color,c=>{$('penColor').value=c;syncPen();});}
+$('penColor').oninput=syncPen;$('penSize').oninput=syncPen;
+cv.on('path:created',()=>save());
+
+/* ===== templates: objects in fractions of the page, so one template fits any size ===== */
+const T=(text,o)=>({type:'i-text',text,styles:{},originX:'center',textAlign:'center',fontFamily:'Kanit',fill:'#0e1318',...o});
+const TEMPLATES=[
+ {name:'โปรโมชันลดราคา',preset:4,fonts:['Kanit'],bg:'#fff4ef',make:(W,H,m)=>[
+  {type:'circle',left:W-m*.5,top:-m*.22,radius:m*.38,fill:'#ff9f5a',opacity:.35},
+  {type:'circle',left:-m*.15,top:H-m*.32,radius:m*.25,fill:ACC,opacity:.18},
+  T('SALE',{left:W/2,top:H*.2,fontSize:m*.26,fontWeight:'bold',fill:ACC}),
+  T('ลดสูงสุด 50%',{left:W/2,top:H*.5,fontSize:m*.085,fontWeight:'bold'}),
+  T('ทุกชิ้นในร้าน วันนี้ – 31 ต.ค.',{left:W/2,top:H*.62,fontSize:m*.04,fill:'#5e6670'}),
+  {type:'rect',originX:'center',left:W/2,top:H*.74,width:m*.42,height:m*.1,rx:m*.05,ry:m*.05,fill:'#0e1318'},
+  T('ช้อปเลย',{left:W/2,top:H*.74+m*.018,fontSize:m*.05,fill:'#fff',fontWeight:'bold'})]},
+ {name:'คำคมสตอรี่',preset:1,fonts:['Mitr'],bg:'#1d2127',make:(W,H,m)=>[
+  T('“',{left:W/2,top:H*.2,fontSize:m*.5,fill:ACC,fontFamily:'Mitr'}),
+  T('ความพยายาม\nไม่เคยทรยศใคร',{left:W/2,top:H*.42,fontSize:m*.1,fill:'#fff',fontFamily:'Mitr',lineHeight:1.3}),
+  {type:'rect',originX:'center',left:W/2,top:H*.62,width:m*.14,height:m*.01,fill:'#ff9f5a'},
+  T('— ชื่อผู้พูด',{left:W/2,top:H*.65,fontSize:m*.045,fill:'#c9ced6',fontFamily:'Mitr'})]},
+ {name:'โปสเตอร์กิจกรรม',preset:3,fonts:['Kanit','Sarabun'],bg:'#ffeede',make:(W,H,m)=>[
+  {type:'rect',left:0,top:0,width:W,height:H*.4,fill:ACC},
+  T('WORKSHOP',{left:W/2,top:H*.07,fontSize:m*.06,fill:'#fff',charSpacing:300}),
+  T('ออกแบบกราฟิก\nเบื้องต้น',{left:W/2,top:H*.14,fontSize:m*.12,fill:'#fff',fontWeight:'bold',lineHeight:1.1}),
+  T('เสาร์ 8 พฤศจิกายน · 13:00–17:00 น.',{left:W/2,top:H*.46,fontSize:m*.05,fontWeight:'bold'}),
+  T('ห้องประชุมใหญ่ ชั้น 3\nฟรี! รับจำนวนจำกัด 40 ที่นั่ง',{left:W/2,top:H*.53,fontSize:m*.042,fontFamily:'Sarabun',fill:'#3a4048',lineHeight:1.5}),
+  {type:'rect',left:W*.1,top:H*.86,width:W*.8,height:Math.max(2,m*.004),fill:'#0e1318',opacity:.25},
+  T('ลงทะเบียนที่ www.example.com',{left:W/2,top:H*.89,fontSize:m*.038,fontFamily:'Sarabun'})]},
+ {name:'ปก YouTube',preset:5,fonts:['Kanit'],bg:'#0e1318',make:(W,H,m)=>[
+  {type:'rect',left:W*.6,top:0,width:W*.4,height:H,fill:ACC},
+  {type:'circle',originX:'center',originY:'center',left:W*.8,top:H*.5,radius:m*.3,fill:'#ff9f5a'},
+  T('10 เทคนิค',{originX:'left',textAlign:'left',left:W*.06,top:H*.18,fontSize:m*.18,fill:'#fff',fontWeight:'bold'}),
+  T('ที่มือใหม่\nต้องรู้!',{originX:'left',textAlign:'left',left:W*.06,top:H*.42,fontSize:m*.16,fill:'#f5b301',fontWeight:'bold',lineHeight:1.05})]},
+ {name:'โลโก้ร้าน',preset:6,fonts:['Chakra Petch'],bg:'#ffffff',make:(W,H,m)=>[
+  {type:'circle',originX:'center',left:W/2,top:H*.16,radius:m*.21,fill:ACC},
+  T('P',{left:W/2,top:H*.22,fontSize:m*.26,fill:'#fff',fontFamily:'Chakra Petch',fontWeight:'bold'}),
+  T('PINCUT',{left:W/2,top:H*.64,fontSize:m*.1,fontFamily:'Chakra Petch',fontWeight:'bold',charSpacing:200}),
+  T('DESIGN STUDIO',{left:W/2,top:H*.77,fontSize:m*.035,fill:'#5e6670',fontFamily:'Chakra Petch',charSpacing:500})]}];
+async function tplJSON(t,W,H){await Promise.all(t.fonts.flatMap(f=>[`400 40px "${f}"`,`700 40px "${f}"`]).map(f=>document.fonts.load(f).catch(()=>{})));
+ return {background:t.bg,objects:t.make(W,H,Math.min(W,H))};}
+const presetPx=p=>[toPx(p[1],p[3]),toPx(p[2],p[3])];
+async function useTemplate(i,fresh){const t=TEMPLATES[i];
+ if(fresh){const p=PRESETS[t.preset],[W,H]=presetPx(p);newDoc(W,H,p[0],sizeTxt(p));docName=t.name;$('docTitle').value=docName;}
+ const j=await tplJSON(t,docW,docH);busy=true;
+ cv.loadFromJSON(j,()=>{cv.renderAll();busy=false;save();if(!fresh)toast('ใช้เทมเพลตแล้ว',4000,{label:'ย้อนกลับ',fn:undo});});}
+async function renderTemplates(){const cards=await Promise.all(TEMPLATES.map(async(t,i)=>{const p=PRESETS[t.preset],[W,H]=presetPx(p);
+  const sc=new fabric.StaticCanvas(document.createElement('canvas'),{width:W,height:H,enableRetinaScaling:false}),j=await tplJSON(t,W,H);
+  const src=await new Promise(r=>sc.loadFromJSON(j,()=>{sc.renderAll();r(sc.toDataURL({format:'jpeg',quality:.85,multiplier:320/Math.max(W,H)}));}));sc.dispose();
+  return (fresh)=>`<button class="tpl" onclick="useTemplate(${i},${fresh})"><div class="pv"><img src="${src}" alt=""></div><b>${esc(t.name)}</b><small>${esc(p[0])}</small></button>`;}));
+ $('homeTpl').innerHTML=cards.map(c=>c(true)).join('');$('edTpl').innerHTML=cards.map(c=>c(false)).join('');}
+renderTemplates();
+
+/* ===== layers ===== */
+const LNAME={'i-text':'ข้อความ',image:'รูปภาพ',rect:'สี่เหลี่ยม',circle:'วงกลม',triangle:'สามเหลี่ยม',polygon:'ดาว',line:'เส้น',path:'เส้นวาด',group:'กลุ่ม'};
+const lname=o=>o.name||(o.type==='i-text'?o.text.split('\n')[0].slice(0,30):LNAME[o.type]||o.type);
+function renderLayers(){if(openP!=='layers')return;const box=$('layers'),objs=cv.getObjects().slice().reverse(),sel=cv.getActiveObjects();
+ box.innerHTML=objs.length?'':'<div class="empty">ยังไม่มีองค์ประกอบบนหน้านี้</div>';
+ objs.forEach(o=>{const r=document.createElement('div'),n=lname(o);r.className='lyr'+(sel.includes(o)?' on':'')+(o.visible?'':' hid');
+  r.innerHTML=`<button class="ln"></button>
+   <button data-a="vis" aria-label="${o.visible?'ซ่อน':'แสดง'}" title="${o.visible?'ซ่อน':'แสดง'}"><svg><use href="#i-${o.visible?'eye':'eyeoff'}"/></svg></button>
+   <button data-a="lock" aria-label="${o.lockMovementX?'ปลดล็อก':'ล็อก'}" title="${o.lockMovementX?'ปลดล็อก':'ล็อก'}"><svg><use href="#i-${o.lockMovementX?'lock':'unlock'}"/></svg></button>
+   <button data-a="up" aria-label="เลื่อนขึ้น" title="เลื่อนไปข้างหน้า"><svg><use href="#i-up"/></svg></button>
+   <button data-a="dn" aria-label="เลื่อนลง" title="เลื่อนไปข้างหลัง"><svg><use href="#i-dn"/></svg></button>`;
+  const ln=r.querySelector('.ln');ln.textContent=n;ln.title=n;
+  ln.onclick=()=>{if(!o.visible)return;cv.setActiveObject(o);cv.requestRenderAll();};
+  ln.ondblclick=()=>{const i=document.createElement('input');i.value=n;i.setAttribute('aria-label','ชื่อเลเยอร์');ln.replaceWith(i);i.focus();i.select();
+   let done=false;const fin=ok=>{if(done)return;done=true;if(ok)o.name=i.value.trim()||undefined;save();renderLayers();};
+   i.onkeydown=e=>{if(e.key==='Enter')fin(true);if(e.key==='Escape')fin(false);};i.onblur=()=>fin(true);};
+  r.onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a;if(!a)return;
+   if(a==='vis'){o.visible=!o.visible;if(!o.visible&&sel.includes(o))cv.discardActiveObject();}
+   if(a==='lock')return lock(o);
+   if(a==='up')o.bringForward();if(a==='dn')o.sendBackwards();
+   cv.requestRenderAll();save();renderLayers();};
+  box.append(r);});}
+['object:added','object:removed'].forEach(ev=>cv.on(ev,()=>!busy&&renderLayers()));
+
+/* ===== align, group, select all, right-click ===== */
+function align(d){const objs=cv.getActiveObjects();if(!objs.length)return;const multi=objs.length>1;cv.discardActiveObject();
+ const rs=objs.map(o=>o.getBoundingRect(true,true)),L=multi?Math.min(...rs.map(r=>r.left)):0,T=multi?Math.min(...rs.map(r=>r.top)):0,
+  R=multi?Math.max(...rs.map(r=>r.left+r.width)):docW,B=multi?Math.max(...rs.map(r=>r.top+r.height)):docH;
+ objs.forEach((o,i)=>{const r=rs[i];
+  o.set({left:o.left+({l:L-r.left,c:(L+R-r.width)/2-r.left,r:R-r.width-r.left}[d]||0),top:o.top+({t:T-r.top,m:(T+B-r.height)/2-r.top,b:B-r.height-r.top}[d]||0)}).setCoords();});
+ cv.setActiveObject(multi?new fabric.ActiveSelection(objs,{canvas:cv}):objs[0]);cv.requestRenderAll();save();onSel();}
+function groupSel(){const o=act();if(o?.type!=='activeSelection')return;o.toGroup();cv.requestRenderAll();save();onSel();}
+function ungroupSel(){const o=act();if(o?.type!=='group')return;o.toActiveSelection();cv.requestRenderAll();save();onSel();}
+function selectAll(){cv.discardActiveObject();const all=cv.getObjects().filter(o=>o.visible);
+ if(all.length)cv.setActiveObject(all.length>1?new fabric.ActiveSelection(all,{canvas:cv}):all[0]);cv.requestRenderAll();}
+cv.upperCanvasEl.addEventListener('contextmenu',e=>{e.preventDefault();const t=cv.findTarget(e,false);if(!t)return;
+ if(!cv.getActiveObjects().includes(t)){cv.setActiveObject(t);cv.requestRenderAll();}
+ const m=$('menu'),s=$('stage').getBoundingClientRect(),st=$('stage');m.style.display='flex';
+ m.style.left=Math.min(e.clientX-s.left,s.width-m.offsetWidth-8)+st.scrollLeft+'px';m.style.top=Math.min(e.clientY-s.top,s.height-m.offsetHeight-8)+st.scrollTop+'px';});
+
+/* ===== smart guides: snap to page edges/centre and other objects while dragging ===== */
+let guides=[];
+cv.on('object:moving',e=>{const o=e.target,t=8/zoom;o.setCoords();const r=o.getBoundingRect(true,true);guides=[];
+ const others=cv.getObjects().filter(x=>x!==o&&x.visible&&!(o.getObjects?.().includes(x))).map(x=>x.getBoundingRect(true,true));
+ const tx=[0,docW/2,docW,...others.flatMap(b=>[b.left,b.left+b.width/2,b.left+b.width])],ty=[0,docH/2,docH,...others.flatMap(b=>[b.top,b.top+b.height/2,b.top+b.height])];
+ const snap=(pts,targets,key)=>{for(const p of pts)for(const q of targets)if(Math.abs(p-q)<t){o.set(key,o[key]+q-p);guides.push(key==='left'?{x:q}:{y:q});return;}};
+ snap([r.left,r.left+r.width/2,r.left+r.width],tx,'left');snap([r.top,r.top+r.height/2,r.top+r.height],ty,'top');o.setCoords();});
+cv.on('after:render',e=>{if(!guides.length||e.ctx!==cv.contextContainer)return;const c=e.ctx,v=cv.viewportTransform;  // only the live canvas, never exports
+ c.save();c.strokeStyle=ACC;c.lineWidth=1;c.setLineDash([4,4]);c.beginPath();
+ guides.forEach(g=>{if(g.x!=null){const X=g.x*v[0]+v[4];c.moveTo(X,0);c.lineTo(X,cv.height);}else{const Y=g.y*v[3]+v[5];c.moveTo(0,Y);c.lineTo(cv.width,Y);}});
+ c.stroke();c.restore();});
+cv.on('mouse:up',()=>{if(guides.length){guides=[];cv.requestRenderAll();}});
+
+/* ===== effects panel: image filters, outline/stroke, corner radius, shadow ===== */
+const FILT={brightness:v=>new fabric.Image.filters.Brightness({brightness:v/100}),contrast:v=>new fabric.Image.filters.Contrast({contrast:v/100}),
+ saturation:v=>new fabric.Image.filters.Saturation({saturation:v/100}),blur:v=>new fabric.Image.filters.Blur({blur:v/100}),gray:()=>new fabric.Image.filters.Grayscale()};
+function renderFx(){const o=act(),box=$('fxBody');
+ if(!o||o.type==='activeSelection'){box.innerHTML='<h4>เอฟเฟกต์</h4><div class="empty">เลือกองค์ประกอบหนึ่งชิ้นบนผืนงานก่อน</div>';return;}
+ const rng=(k,l,min,max,v)=>`<label class="fxr"><span>${l}<output>${v}</output></span><input type="range" data-k="${k}" min="${min}" max="${max}" value="${v}"></label>`;
+ const chk=(k,l,on)=>`<label class="toggle">${l}<input type="checkbox" data-k="${k}" ${on?'checked':''}></label>`,col=(k,l,v)=>`<label class="toggle">${l}<input type="color" data-k="${k}" value="${hex(v)}"></label>`;
+ const f=o.fx||{},sh=o.shadow,rows=[];
+ if(o.type==='image')rows.push('<h4>ปรับแต่งรูป</h4>',rng('brightness','ความสว่าง',-100,100,f.brightness||0),rng('contrast','คอนทราสต์',-100,100,f.contrast||0),
+  rng('saturation','ความอิ่มสี',-100,100,f.saturation||0),rng('blur','เบลอ',0,100,f.blur||0),chk('gray','ขาวดำ',f.gray),'<button class="btn out" data-k="reset">ล้างการปรับแต่งรูป</button>');
+ else if(strokeColored(o))rows.push('<h4>เส้น</h4>',rng('strokeWidth','ความหนา',1,80,Math.round(o.strokeWidth)));
+ else if(o.type!=='group')rows.push(`<h4>${isText(o)?'ขอบตัวอักษร':'เส้นขอบ'}</h4>`,col('stroke','สีขอบ',o.stroke||'#0e1318'),rng('strokeWidth','ความหนา',0,isText(o)?20:60,o.stroke?Math.round(o.strokeWidth):0));
+ if(o.type==='rect')rows.push(rng('rx','มุมโค้ง',0,Math.round(Math.min(o.width,o.height)/2),Math.round(o.rx||0)));
+ rows.push('<h4>เงา</h4>',chk('shadow','ใส่เงา',sh));
+ if(sh)rows.push(rng('sblur','ความฟุ้ง',0,100,Math.round(sh.blur)),rng('soff','ระยะห่าง',0,100,Math.round(Math.hypot(sh.offsetX,sh.offsetY))),col('scolor','สีเงา',sh.color));
+ box.innerHTML=rows.join('');}
+function applyFx(o,k,v){o.dirty=true;
+ if(k in FILT){o.fx={...o.fx,[k]:v};o.filters=Object.entries(o.fx).filter(([,x])=>x).map(([n,x])=>FILT[n](x));o.applyFilters();return;}
+ if(k==='reset'){o.fx={};o.filters=[];o.applyFilters();return;}
+ if(k==='strokeWidth')return strokeColored(o)?o.set('strokeWidth',v):o.set({strokeWidth:v,stroke:v?$('fxBody').querySelector('[data-k=stroke]').value:null,paintFirst:'stroke'});
+ if(k==='stroke')return o.set({stroke:v,strokeWidth:o.stroke?o.strokeWidth:Math.max(2,Math.round(Math.min(o.width,o.height)/60)),paintFirst:'stroke'});
+ if(k==='rx')return o.set({rx:v,ry:v});
+ if(k==='shadow')return o.set('shadow',v?new fabric.Shadow({color:'rgba(0,0,0,0.35)',blur:20,offsetX:8,offsetY:8}):null);
+ if(k==='sblur')o.shadow.blur=v;if(k==='soff')o.shadow.offsetX=o.shadow.offsetY=Math.round(v/Math.SQRT2);
+ if(k==='scolor')o.shadow.color=new fabric.Color(v).setAlpha(.45).toRgba();}
+const fxVal=el=>el.type==='checkbox'?el.checked:el.type==='range'?+el.value:el.value;
+$('fxBody').oninput=e=>{const el=e.target,k=el.dataset.k,o=act();if(!k||!o)return;applyFx(o,k,fxVal(el));
+ const out=el.closest('.fxr')?.querySelector('output');if(out)out.textContent=el.value;cv.requestRenderAll();};
+$('fxBody').onchange=e=>{const k=e.target.dataset.k;if(!k||!act())return;save();if(['shadow','stroke','strokeWidth'].includes(k))renderFx();};
+$('fxBody').onclick=e=>{if(e.target.dataset.k!=='reset'||!act())return;applyFx(act(),'reset');cv.requestRenderAll();save();renderFx();};
+
+/* ===== file menu: open / save an editable design file (.json) ===== */
+const dataUrl=(text,type)=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(new Blob([text],{type}));});
+$('fileBtn').onclick=e=>{e.stopPropagation();const b=e.currentTarget;if(fmOpen===b){closeFileMenu();return;}closeFileMenu();const m=$('fmenu');
+ m.innerHTML=`<button data-a="new" role="menuitem"><svg><use href="#i-plus"/></svg>สร้างดีไซน์ใหม่</button>
+  <button data-a="open" role="menuitem"><svg><use href="#i-folder"/></svg>เปิดไฟล์ดีไซน์ (.json)</button>
+  <button data-a="save" role="menuitem"><svg><use href="#i-down"/></svg>บันทึกเป็นไฟล์ดีไซน์ (.json)</button><hr>
+  <button data-a="dl" role="menuitem"><svg><use href="#i-img"/></svg>ดาวน์โหลด PNG / JPG / PDF / SVG</button>`;
+ const A={new:()=>go('size'),open:()=>$('jsonFile').click(),dl:()=>$('sheet').classList.add('on'),
+  save:async()=>{const j={format:'pincut-design',version:1,name:docName,kind:docKind,size:docSize,w:docW,h:docH,canvas:cv.toJSON(PROPS)};
+   try{const path=await api().save_export(await dataUrl(JSON.stringify(j),'application/json'),'json',docName);if(path)toast('บันทึกแล้ว: '+path,4000);}
+   catch(err){toast('บันทึกไม่สำเร็จ: '+(err.message||err),5000);}}};
+ m.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>{closeFileMenu();A[x.dataset.a]();});placePop(m,b);};
+$('jsonFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;let j;
+ try{j=JSON.parse(await f.text());}catch{toast('ไฟล์นี้ไม่ใช่ไฟล์ดีไซน์ (.json)',5000);return;}
+ const okSize=n=>Number.isFinite(n)&&n>0&&n<=20000;
+ if(j?.format!=='pincut-design'||!okSize(j.w)||!okSize(j.h)||typeof j.canvas!=='object'){toast('ไฟล์นี้ไม่ใช่ไฟล์ดีไซน์ของ PinCut',5000);return;}
+ await flushSave();showDoc({...j,id:newId(),name:String(j.name||UNTITLED).slice(0,120)},()=>{save();toast('เปิดไฟล์ดีไซน์แล้ว — บันทึกเป็นดีไซน์ใหม่ในล่าสุด',4000);});};
 </script>
 </body>
 </html>

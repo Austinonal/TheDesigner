@@ -98,3 +98,60 @@ def test_download_pin_falls_back_when_original_missing(tmp_path):
 def test_download_pin_raises_when_nothing_works(tmp_path):
     with pytest.raises(RuntimeError):
         core.download_pin("https://i.pinimg.com/236x/a/b.jpg", tmp_path, lambda u, **k: FakeResp(404, "text/html"))
+
+
+# ---------- designs ----------
+
+def designs_dir(tmp_path):
+    d = tmp_path / "designs"
+    (d / "trash").mkdir(parents=True)
+    return d
+
+
+def test_save_design_keeps_created_and_star_and_hides_canvas(tmp_path):
+    d = designs_dir(tmp_path)
+    doc = {"id": "d1", "name": "โปสเตอร์", "kind": "A4", "w": 794, "h": 1123, "canvas": {"objects": [{}, {}]}}
+    m = core.save_design(d, doc, now=100)
+    assert m["created"] == m["updated"] == 100 and m["objects"] == 2 and "canvas" not in m
+    core.update_design(d, "d1", starred=True)
+    m = core.save_design(d, {**doc, "canvas": {"objects": []}}, now=200)
+    assert (m["created"], m["updated"], m["starred"], m["objects"]) == (100, 200, True, 0)
+    assert core.load_design(d, "d1")["canvas"] == {"objects": []}
+
+
+def test_update_design_renames_without_counting_as_an_edit(tmp_path):
+    d = designs_dir(tmp_path)
+    core.save_design(d, {"id": "d1", "name": "a"}, now=100)
+    m = core.update_design(d, "d1", name="  ใหม่  ")
+    assert m["name"] == "ใหม่" and m["updated"] == 100
+    assert core.update_design(d, "d1", name="   ")["name"] == "ใหม่"  # blank name is ignored
+
+
+def test_list_designs_newest_first_and_skips_broken_files(tmp_path):
+    d = designs_dir(tmp_path)
+    core.save_design(d, {"id": "old"}, now=1)
+    core.save_design(d, {"id": "new"}, now=2)
+    (d / "broken.json").write_text("{not json", encoding="utf-8")
+    assert [m["id"] for m in core.list_designs(d)] == ["new", "old"]
+    assert core.list_designs(d)[0]["name"] == "ดีไซน์ที่ไม่มีชื่อ"
+
+
+def test_trash_and_restore_design(tmp_path):
+    d = designs_dir(tmp_path)
+    core.save_design(d, {"id": "d1", "name": "x"})
+    core.trash_design(d, "d1")
+    assert core.list_designs(d) == [] and (d / "trash" / "d1.json").exists()
+    assert core.restore_design(d, "d1")["name"] == "x"
+    assert [m["id"] for m in core.list_designs(d)] == ["d1"]
+
+
+@pytest.mark.parametrize("bad", ["../x", "a/b", "", "a.json", "x" * 65])
+def test_design_ids_cannot_escape_the_folder(tmp_path, bad):
+    with pytest.raises(ValueError):
+        core.save_design(designs_dir(tmp_path), {"id": bad})
+
+
+def test_export_name_keeps_thai_and_drops_path_chars():
+    assert core.export_name("ดีไซน์ที่ไม่มีชื่อ", "png") == "ดีไซน์ที่ไม่มีชื่อ.png"
+    assert core.export_name('../a:b*"c', "pdf") == "_a_b__c.pdf"
+    assert core.export_name("  ", "jpg") == "design.jpg"
